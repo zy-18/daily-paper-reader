@@ -25,3 +25,73 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: safe-rl
+      description: 检索关于离散动作空间中带安全约束的强化学习研究，重点关注有限动作约束马尔可夫决策过程、安全保证、动作掩码、安全屏蔽、拉格朗日约束优化、安全策略改进、风险敏感强化学习，以及可迁移到离散动作的连续动作安全技术。
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: safe reinforcement learning
+          keyword_cn: 安全强化学习
+          query: safe reinforcement learning methods with safety constraints and guarantees
+        - keyword: constrained Markov decision processes
+          keyword_cn: 约束马尔可夫决策过程
+          query: finite-action constrained Markov decision processes with safety constraints
+        - keyword: discrete action spaces
+          keyword_cn: 离散动作空间
+          query: safe policy learning in discrete action spaces
+        - keyword: action masking
+          keyword_cn: 动作掩码
+          query: action masking for safe exploration in discrete action reinforcement learning
+        - keyword: safe policy improvement
+          keyword_cn: 安全策略改进
+          query: safe policy improvement with theoretical guarantees under safety constraints
+        - keyword: constrained policy optimization
+          keyword_cn: 约束策略优化
+          query: constrained policy optimization adapted to discrete action safe reinforcement learning
+      intent_queries:
+        - query: >-
+            Find methods for safe reinforcement learning in finite action constrained Markov decision processes that
+            provide safety guarantees during exploration.
+          query_cn: 查找在有限动作约束马尔可夫决策过程中、能在探索阶段提供安全保证的安全强化学习方法。
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            Identify limitations of discrete action safe reinforcement learning methods including constraint violations,
+            feasibility, and conservative exploration.
+          query_cn: 识别离散动作安全强化学习方法的局限性，包括约束违反、可行性和保守探索。
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            Find continuous action safety techniques such as constrained policy optimization, safety layers, and control
+            barrier functions that can be adapted to discrete actions.
+          query_cn: 查找可迁移到离散动作的连续动作安全技术，如约束策略优化、安全层和控制屏障函数。
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            Find theoretical results and reproducible experiments on safe policy improvement and risk sensitive
+            reinforcement learning with safety constraints.
+          query_cn: 查找关于安全策略改进和带安全约束的风险敏感强化学习的理论结果与可复现实验。
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-10-26T12:05:12.482Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
