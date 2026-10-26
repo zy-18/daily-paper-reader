@@ -1,0 +1,495 @@
+Title: Safe World Model for Joint Trajectory and Beamforming Design of Mobile Base Stations
+
+URL Source: https://arxiv.org/pdf/2610.29534v1
+
+Published Time: Thu, 22 Oct 2026 01:06:06 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+> 1
+
+# Safe World Model for Joint Trajectory and Beamforming Design of Mobile Base Stations 
+
+Abdolrasoul Sakhaei Gharagezlou, Zeinab Askari Donbeh, Mehdi Monemi, Matti Latva-aho, Mehdi Rasti 
+
+Abstract —Mobile base stations (MBSs), including aerial and ground-based platforms, provide flexible wireless coverage through adaptive positioning. However, jointly optimizing their trajectories and digital beamforming is challenging because movement changes channel conditions and interference, while beamforming determines the resulting signal and interference powers. These coupled decisions also account for how current movements affect future positions and communication perfor-mance under mobility and safety constraints. We formulate this problem as a constrained Markov decision process that maximizes the time-averaged sum signal-to-interference-plus-noise ratio (SINR), subject to mobility, restricted-zone avoidance, and transmit-power constraints. To support long-term planning and reduce the extensive environment interactions required by model-free reinforcement learning, we develop a SafeDreamer-based world model framework that learns latent system dy-namics from experience and optimizes a joint trajectory and beamforming policy through imagined trajectories. Feasibility-preserving action mappings and safety cost signals incorporate operational constraints into policy learning. Simulation results demonstrate that the proposed framework improves the time-averaged sum SINR by an average of 7% and 9% compared with proximal policy and deep Q-network baselines, respectively, while achieving higher sample efficiency and more reliable constraint satisfaction. 
+
+Index Terms —Mobile base station (MBS), reinforcement learn-ing (RL), world model, SafeDreamer. 
+
+I. I NTRODUCTION 
+
+# MOBILE base stations (MBSs), including unmanned aerial vehicles (UAVs) and ground-based mobile plat-forms, have emerged as a promising solution for enhancing wireless coverage and communication performance through flexible deployment and adaptive mobility, particularly in areas with limited network infrastructure or temporary communica-tion needs [1], [2]. However, jointly optimizing MBS trajec-tories and beamforming is challenging due to time-varying channels, mobility constraints, and temporal dependencies. Extensive research has investigated MBS-assisted commu-nications to improve security, coverage, and throughput [1]– [6]. For example, the authors in [1] studied age-of-information minimization in UAV-assisted covert communications in the presence of an aerial eavesdropper. The authors in [2] de-veloped a secure UAV-enabled integrated sensing and com-munication (ISAC) framework to maximize the secrecy rate, whereas [3] investigated achievable-rate maximization in a reconfigurable intelligent surface (RIS)-assisted UAV-ISAC system. Despite these advances, conventional optimization methods often require accurate wireless environment models and incur high computational complexity. Such models can be difficult to obtain under time-varying channel conditions and 
+
+All authors are with the Centre for Wireless Communications (CWC), University of Oulu, Finland (e-mail: {abdolrasoul.sakhaeigharagezlou; zeinab.askaridonbeh; mehdi.monemi; matti.latva-aho; mehdi.rasti }@oulu.fi). 
+
+MBS mobility. Furthermore, their high computational com-plexity limits real-time implementation. Although heuristic methods can alleviate these challenges, their scalability and robustness may remain limited in large-scale and dynamic wireless environments [7]. To overcome these limitations, recent studies have adopted reinforcement learning (RL) approaches, including model-based and model-free RL (MBRL/MFRL), to optimize system performance in dynamic wireless networks without requiring accurate mathematical models of the underlying network dy-namics. For example, the authors in [4] proposed a hierarchical deep RL framework to enhance the performance of over-the-air federated learning systems in UAV-assisted wireless networks. The authors in [5] employed MBRL and MFRL for energy efficiency (EE) maximization in mmWave UAV networks, while the authors in [6] used proximal policy optimization (PPO) and deep deterministic policy gradient for sum-rate and EE maximization in multi-UAV networks. Nevertheless, existing RL-based approaches often suffer from limited sam-ple efficiency , requiring extensive environment interactions to explore high-dimensional action spaces, while their limited long-term planning capabilities may hinder the optimization of temporally coupled trajectory and beamforming decisions. World-model-based RL (WMBRL) offers a promising so-lution to these challenges by learning a compact represen-tation of environmental dynamics to predict future states and optimize policies through imagined trajectories [7]. This enables sample-efficient policy optimization while capturing the long-term effects of trajectory and beamforming decisions. Such long-term planning is crucial for maximizing the time-averaged sum signal-to-interference-plus-noise ratio (SINR), as MBS mobility influences both instantaneous communica-tion performance and future channel conditions while affecting trajectory feasibility. Nevertheless, the integration of long-term planning and safety-aware learning for trajectory and beamforming optimization in dynamic MBS-assisted wireless networks remains largely unexplored. Motivated by the above research gap, the main contributions of this paper are summarized as follows. First, we formu-late the joint trajectory and digital beamforming optimiza-tion problem for MBSs as a constrained Markov decision process to maximize the time-averaged sum SINR under time-varying channel conditions, MBS mobility, restricted-zone (RZ), and transmit-power constraints, while accounting for the temporal dependencies of MBS trajectories. Second, we develop a SafeDreamer-based WMBRL framework that learns network dynamics from collected experience and uses predicted sequences of network states to jointly optimize MBS trajectories and digital beamforming, enabling long-term planning while reducing the environment interactions required arXiv:2610.29534v1 [eess.SY] 21 Oct 2026 2
+
+for policy learning. Third, we incorporate the constraints into policy learning through feasibility-preserving action mappings and safety-cost signals. Finally, simulation results demonstrate that the proposed framework achieves higher time-averaged sum SINR than the considered benchmarks, while exhibiting improved sample efficiency and more reliable constraint sat-isfaction compared with PPO and deep Q-network (DQN). II. S YSTEM MODEL AND PROBLEM FORMULATION 
+
+We consider an MBS-assisted communication system in which an MBS equipped with an N -element uniform linear array serves K single-antenna users. The location of the k-th user is denoted by ek = [ xk, y k, 0] T , where xk and yk
+
+represent its coordinates in the two-dimensional plane. We assume a mission duration of T tot , which is divided into T s
+
+equal-duration time slots, each of duration δ = T tot /T s [1]. At time slot t, the MBS moves horizontally at a fixed deploy-ment height B, with its three-dimensional position given by 
+
+eMBS [t] = [x[t], y [t], B ]T [1]. Accordingly, the MBS’s hori-zontal position at time slot t is denoted by u[t] = [x[t], y [t]]T .The MBS trajectory is subject to a maximum displacement constraint between consecutive time slots, expressed as 
+
+‖u[t + 1] − u[t]‖2 ≤ V max δ, t = 0 , . . . , T s − 1, (1) where V max denotes the maximum movement speed of the MBS. In addition, the MBS moves from a predefined initial position u[0] = uI to a specified final position u[T s] = uF,where uI = [ xI, y I]T and uF = [ xF, y F]T . Both the initial and final locations lie within the allowable operating region, i.e., xmin ≤ xI, x F ≤ xmax and ymin ≤ yI, y F ≤ ymax , where 
+
+(xmin , x max ) and (ymin , y max ) denote the allowable coordinate ranges in the two-dimensional plane. Furthermore, the MBS is constrained to remain within the predefined operating region, i.e., xmin ≤ x[t] ≤ xmax and ymin ≤ y[t] ≤ ymax . The RZ is modeled as a circular restricted area that the MBS is required to avoid throughout its trajectory [8]. Let uRZ = [ xRZ , y RZ ]T
+
+and RRZ denote the center coordinates and radius of the RZ, respectively. Accordingly, the MBS trajectory is constrained to remain outside the RZ throughout the mission, as expressed by [8]: ‖u[t] − uRZ ‖2 ≥ RRZ , t = 0 , . . . , T s. (2) To ensure that the MBS can reach its predefined final position 
+
+uF, the initial and final positions are assumed to satisfy 
+
+dG(uI, uF) ≤ T sV max δ, where dG(·, ·) denotes the shortest path length between two positions within the allowable oper-ating region while avoiding the RZ [9]. 
+
+A. Time-Varying Channel Model 
+
+The channel vector between the MBS and the k-th user at time slot t is expressed as gk[t] = √μD k[t]−2 ˜gk[t], ∀t, k, 
+
+where μ denotes the channel power gain at a reference distance of 1 m, Dk[t] denotes the distance between the MBS and the 
+
+k-th user, and ˜gk[t] ∈ CN ×1 represents the corresponding small-scale fading vector [7]. To capture temporal correlation across consecutive time slots, the small-scale fading follows a first-order complex Gauss-Markov process given by ˜gk[t] = 
+
+ρ˜gk[t−1]+ √1 − ρ2 ǫk[t], where ˜gk[0] ∼ CN (0, IN ), ǫk[t] ∼CN (0, IN ), and 0 ≤ ρ < 1 denotes the temporal correlation coefficient of the small-scale fading between consecutive time slots. The received signal at the k-th user in time slot t is formulated as follows: 
+
+yk[t] = gHk [t]wk[t]sk[t] + 
+
+> K
+
+∑ 
+
+> j=1 ,j 6=k
+
+gHk [t]wj [t]sj [t] + nk[t], (3) where wk[t] denotes the digital precoding vector for user 
+
+k in time slot t, associated with the transmitted symbol 
+
+sk[t]. The transmitted symbols are normalized and mutually uncorrelated. Furthermore, nk[t] ∼ CN (0 , σ 2
+
+> k
+
+) is the additive white Gaussian noise at user k during time slot t. The SINR of the k-th user at time slot t is formulated as Γk[t] =      
+
+> |gHk[t]wk[t]|2
+> ∑Kj=1 ,j 6=k|gHk[t]wj[t]|2+σ2
+> k
+
+.
+
+B. Problem Formulation 
+
+The primary objective of this paper is to maximize the time-averaged sum SINR of all users over a finite time horizon of 
+
+T s time slots. To achieve this objective, the MBS trajectory 
+
+{u[t]} and digital beamforming vectors {wk[t]} are jointly optimized under time-varying channel conditions, subject to the initial and final position, mobility, operating-region, RZ, and transmit-power constraints. The resulting optimization problem is formulated as follows: 
+
+maximize  
+
+> {u[t]},{wk[t]}
+
+1
+
+T s 
+
+> Ts
+
+∑
+
+> t=1
+> K
+
+∑
+
+> k=1
+
+Γk[t] (4a) 
+
+s. t.
+
+
+
+u[0] = uI, u[T s] = uF,xmin ≤ x[t] ≤ xmax , t = 0 , . . . , T s,ymin ≤ y[t] ≤ ymax , t = 0 , . . . , T s,
+
+(1) , (2) ,
+
+(4b) 
+
+> K
+
+∑
+
+> k=1
+
+‖wk[t]‖22 ≤ P max , t = 1 , . . . , T s, (4c) where P max denotes the maximum transmit power at the MBS. III. P ROPOSED SOLUTION 
+
+Problem (4) is a non-convex stochastic optimization prob-lem due to time-varying channel conditions, coupling among the decision variables, and temporal dependencies of MBS trajectory decisions. Moreover, the mobility, RZ, and transmit-power constraints introduce additional challenges to the optimization. To address these challenges, we develop aSafeDreamer-based WMBRL framework that learns the latent dynamics of MBS-assisted wireless networks from collected experience and jointly optimizes the MBS trajectory and digital beamforming through imagined trajectories, enabling long-term planning while reducing the need for extensive envi-ronment interactions. Furthermore, the framework incorporates constraints into policy learning through feasibility-preserving action mappings and safety-cost signals. The observation, action, and reward representations are defined as follows. 
+
+A. Observation, Action, and Reward Formulation 1) Observation Space: At the beginning of time slot t, the observation vector is defined as follows: 
+
+o[t] = 
+
+[
+
+x[t], y [t], t, x k[t], y k[t], D k[t],Gk[t], Γk[t − 1] , oF[t], oRZ [t]
+
+]
+
+,
+
+(5) 3
+
+where Gk[t] denotes the normalized effective channel power between the MBS and the k-th user at time slot t. Further-more, oF[t] = [xF − x[t], y F − y[t], B [t] − dG(u[t], uF)]T
+
+denotes the final-position information, which characterizes the relative position of the final destination and the feasibility of reaching it within the remaining mission duration, where 
+
+B[t] = ( T s − t)V max δ represents the maximum distance the MBS can travel during the remaining time slots. Similarly, 
+
+oRZ [t] = [x[t] − xRZ , y [t] − yRZ , ‖u[t] − uRZ ‖2 − RRZ ]T
+
+denotes the RZ information. The observation-space dimension is do = 9 + 5 K.
+
+2) Action Space: At each time slot t, the action vector is defined as a[t] = [x[t+1] −x[t], y [t+1] −y[t], {Pk[t]}Kk=1 
+
+]T ,where the first two components represent the horizontal dis-placement of the MBS, and Pk[t] denotes the transmit power allocated to user k. The corresponding digital beamforming vector is constructed as wk[t] = √Pk[t]vk[t], where vk[t]
+
+denotes the unit-norm regularized zero-forcing (RZF) beam-forming direction. Accordingly, the action-space dimension is 
+
+da = K + 2 .
+
+3) Reward Function: The immediate reward at time slot t,designed to reflect the objective of problem (4), is defined as r[t] = ∑Kk=1 Γk[t]. The long-term return is defined as the cumulative discounted reward over the mission horizon 
+
+Jr(π) = Eπ
+
+[∑T s 
+
+> t=1
+
+γt−1r[t]
+
+]
+
+, where γ denotes the discount factor and π represents the policy. Maximizing the discounted return encourages the agent to improve the long-term sum-SINR performance while accounting for the sequential effects of the MBS trajectory and digital-beamforming decisions over the mission horizon. 
+
+B. Constraint Handling 
+
+The constraints in problem (4) exhibit different char-acteristics and therefore require distinct constraint-handling approaches. Specifically, the MBS mobility and maximum transmit-power constraints are enforced through action-space construction. The initial-position constraint is satisfied by setting the MBS at its predefined starting location, while the final-position constraint is enforced through feasibility-preserving trajectory projection to ensure that the MBS reaches its destination within the prescribed mission duration. Further-more, the operating-region and RZ constraints are incorporated into safety-cost learning. 
+
+1) Action Level Constraints: To satisfy the mobility con-straint in (1), the two-dimensional movement action is nor-malized whenever its Euclidean norm exceeds one and sub-sequently scaled by V max δ. Consequently, the MBS displace-ment satisfies the mobility constraint in (1) at each time slot. Similarly, the power-control actions are transformed into feasi-ble transmit-power allocations as Pk [t] = P max exp( Pk [t])    
+
+> ∑Kj=1 exp( Pj[t])
+
+,ensuring that Pk[t] > 0 and ∑Kk=1 Pk [t] = P max . Conse-quently, the transmit-power constraint in (4c) is satisfied at each time slot. 
+
+2) Feasibility-Preserving Trajectory Projection: The initial-position constraint is satisfied by setting u[0] = uI. To enforce the final-position constraint u[T s] = uF, each candidate MBS position is evaluated to determine whether the final destination can be reached within the remaining time slots while avoiding the RZ. If this condition is violated, the candidate position is projected onto a feasible position that satisfies the mobility and RZ constraints while preserving the reachability of the final destination. 
+
+3) Safety-Cost Learning: The safety-cost function consists of four components to evaluate violations of operating-region, final-position reachability, RZ, and final-position constraints. Each component is described in detail as follows. 
+
+a) Operating-region violation cost: This cost quanti-fies the deviation of the candidate MBS position from the allowable operating region and is expressed as cOR [t] = 
+
+> ‖uc[t]−ΠR(uc[t]) ‖2
+
+√(xmax −xmin )2 +( ymax −ymin )2 , where uc denotes the candidate MBS position and ΠR(·) represents the projection onto the allowable operating region. Accordingly, cOR [t] = 0 when the candidate position lies within the allowable operating region. 
+
+b) Final-position reachability cost: This cost measures whether the MBS can reach its final position within the remaining mission duration and is defined as cFP [t] =[dG(u[t],uF)−B[t]]+
+
+√(xmax −xmin )2 +( ymax −ymin )2 , where [x]+ = max {x, 0}. Accord-ingly, cFP [t] = 0 when the MBS can reach its final position within the remaining mission duration. 
+
+c) RZ violation cost: This cost quantifies the violation of the RZ constraint when the MBS enters the RZ and is defined as cRZ [t] = [RRZ −‖u[t]−uRZ ‖2]+ 
+
+> RRZ
+
+. Accordingly, cRZ [t] = 0 when the MBS remains outside the RZ. 
+
+d) Final-position error cost: This cost measures the deviation of the MBS from its prescribed final position at the end of the mission and is defined as cFE [t] =
+
+‖u[t]−uF‖2√(xmax −xmin )2 +( ymax −ymin )2 I{t = T s}, where I{·} denotes the indicator function. Accordingly, this cost is evaluated only at the end of the mission to determine whether the MBS reaches its prescribed final position. Finally, the total safety cost at time slot t is defined as c[t] = cOR [t]+ cFP [t]+ cRZ [t]  
+
+> Ts
+
++ cFE [t].The expected discounted safety return is defined as Jc(π) = 
+
+Eπ
+
+[∑T s 
+
+> t=1
+
+γt−1c[t]
+
+]
+
+, where π denotes the policy. Accordingly, the constrained policy optimization problem is formulated as 
+
+maximize  
+
+> π
+
+Jr(π) s. t. J c(π) ≤ b, (6) where b denotes the predefined safety-cost budget. This for-mulation aims to maximize the long-term sum SINR while ensuring that the expected safety cost does not exceed the predefined budget b. To solve the problem in (6), the proposed learning framework is described as follows. 
+
+C. Learning Method 
+
+The proposed WMBRL framework consists of three main components: (i) a world model that learns a compact la-tent representation from high-dimensional observations and predicts future states, rewards, and safety costs; (ii) reward and cost critics that estimate the expected long-term com-munication performance and associated safety costs under a given policy; (iii) a safe actor that selects actions to maximize the expected long-term reward while satisfying the prescribed safety constraints. These components are detailed in the following subsections. 4
+
+1) World Model Learning: The world model comprises an observation encoder, a recurrent state-space model (RSSM), and prediction heads for the observations, rewards, safety costs, and continuation signals. The observation encoder maps the high-dimensional observation o[t] into a compact latent representation, while the RSSM models its temporal evolution based on the agent’s action a[t]. Specifically, at each time slot t, the deterministic state h[t] is updated based on the previous deterministic state h[t − 1] , stochastic state z[t − 1] ,and action a[t − 1] , while the stochastic state z[t] is inferred from the current deterministic state h[t] and observation o[t].The RSSM models the environment dynamics through its sequence model and transition prior, enabling the generation of imagined trajectories without direct environment interactions. The resulting latent states are used to reconstruct observations and predict rewards, safety costs, and continuation signals. Accordingly, the components of the proposed world model are formulated as follows [10]: 
+
+RSSM 
+
+
+
+Sequence model: h[t] = fφ(h[t−1] , z[t−1] , a[t−1]) ,
+
+Encoder: z[t] ∼ qφ(z[t] | h[t], o[t]) ,
+
+Transition prior: ˆz[t] ∼ pφ(ˆ z[t] | h[t]) ,
+
+Reward predictor: ˆr[t] ∼ pφ(ˆ r[t] | h[t], z[t]) ,
+
+Cost predictor: ˆc[t] ∼ pφ(ˆ c[t] | h[t], z[t]) ,
+
+Continuation predictor: ˆd[t] ∼ pφ
+
+( ˆd[t] | h[t], z[t]
+
+)
+
+,
+
+Decoder: ˆo[t] ∼ pφ(ˆ o[t] | h[t], z[t]) ,
+
+where φ denotes the combined learnable parameters of the world model, while ˆz[t], ˆr[t], ˆc[t], ˆd[t], and ˆo[t] represent the predicted latent state, reward, safety cost, continuation signal, and reconstructed observation, respectively. The func-tions qφ(·) and pφ(·) denote the posterior and predictive distributions, while fφ(·) represents the deterministic state-transition function. The overall world-model loss is given by 
+
+L(φ)= Eqφ
+
+[ T s
+
+∑
+
+> t=1
+
+(βpred Lpred [t]+ βtran Ltran [t]+ βrep Lrep [t])]
+
+, (7) where Lpred , Ltran , and Lrep denote the prediction, transition, and representation losses, respectively, with corresponding weighting coefficients βpred = 1 , βtran = 0 .5, and βrep = 0 .1
+
+[11]. The prediction loss jointly trains the observation decoder, reward, safety cost, and continuation predictors as follows: 
+
+Lpred [t] = − log pφ(o[t] | h[t], z[t]) − log pφ(r[t] | h[t], z[t]) 
+
+− log pφ(c[t] | h[t], z[t]) − log pφ(d[t] | h[t], z[t]) .
+
+The transition loss minimizes the Kullback–Leibler (KL) divergence between the predicted prior and posterior latent distributions and is defined as follows [11]: 
+
+Ltran [t] = max 
+
+{
+
+1, KL 
+
+[
+
+sg( qφ(z[t] | h[t], o[t])) 
+
+∥∥∥pφ(z[t] | h[t]) 
+
+]} 
+
+,
+
+where sg( ·) denotes the stop-gradient operator. The representa-tion loss minimizes the KL divergence between the posterior and predicted prior latent distributions to train the posterior encoder and is defined as follows [11]: 
+
+Lrep [t]= max 
+
+{
+
+1, KL 
+
+[
+
+qφ(z[t]|h[t], o[t]) 
+
+∥∥∥sg( pφ(z[t] | h[t])) 
+
+]} 
+
+.
+
+These losses enable the world model to learn compact latent representations and predict future states, rewards, and safety costs for policy optimization over imagined trajectories. 
+
+2) Critic Learning: The actor–critic framework jointly op-timizes the MBS trajectory and digital beamforming over imagined trajectories generated by the learned world model. The reward and cost critics estimate the long-term cumulative reward and safety cost over these trajectories. To train the critics, the temporal-difference TD( λ) return is employed, which combines the predicted immediate reward or cost with the corresponding future value estimates. Accordingly, the reward TD( λ) return is recursively defined as [11]: 
+
+V r
+
+> λ
+
+[t]= 
+
+
+
+ˆr[t]+ γ[(1 −λ)vψr (h[t+1] , z[t+1])+ λV r
+
+> λ
+
+[t+1]] , t < H, vψr (h[H], z[H]) , t = H, 
+
+where vψr (·) denotes the reward critic with trainable param-eters ψr, H represents the imagination horizon, and λ is the TD( λ) parameter. Similarly, the cost TD( λ) return is given by 
+
+V c 
+
+> λ
+
+[t] = 
+
+
+
+ˆc[t]+ γ [(1 −λ)vψc (h[t+1] , z[t+1])+ λV c 
+
+> λ
+
+[t+1]] , t <H, vψc (h[H], z[H]) , t =H, 
+
+where vψc (·) denotes the cost critic, parameterized by the trainable parameters ψc. The reward and cost critics estimate V r
+
+> λ
+
+[t] and V c 
+
+> λ
+
+[t], respectively, using Dreamer-style two-hot categorical targets in the symlog domain. Accordingly, the reward-critic loss is given by L(ψr ) = Et
+
+[
+
+− twohot(symlog( V r
+
+> λ
+
+[t])) T log pψr [t]
+
+]
+
+,while the cost-critic loss is given by L(ψc) =
+
+Et
+
+[
+
+− twohot(symlog( V c 
+
+> λ
+
+[t])) T log pψc [t]
+
+]
+
+, in which 
+
+symlog( x) = sign( x) log( |x| + 1) [11]. The reward critic estimates long-term communication performance, while the cost critic estimates cumulative safety costs. 
+
+3) Safe Actor Learning: The safe actor learns to op-timize MBS trajectory and digital beamforming decisions using imagined trajectories generated by the world model, thereby reducing reliance on direct environment interactions. Each imagined trajectory starts from a latent state inferred from observations sampled from the replay buffer. At each imagined time slot, the actor selects an action according to the policy πθ , where θ denotes the trainable parameters of the actor network. The world model then predicts the next latent state, reward, and safety cost. The predicted rewards and costs are used to compute the corresponding TD( λ)returns. For actor optimization, the reward and cost advan-tages are calculated from the corresponding TD( λ) returns and critic estimates as Ar [t] = V r
+
+> λ
+
+[t] − vψr [t], Ac[t] =
+
+V c 
+
+> λ
+
+[t] − vψc [t], respectively. The reward and cost advantages are combined using the non-negative Lagrange multiplier λp
+
+as A[t] = Ar [t]−λp Ac[t]1+ λp . Each imagined time slot is weighted by w[t] = ∏t−1 
+
+> j=0
+
+γ ˆd[j]. Accordingly, the actor loss is defined as L(θ) = −Et [w[t] ( A[t] + ηH[πθ])] , where η denotes the entropy regularization coefficient. To incorporate the safety requirements into policy optimization, the Lagrange multiplier is adjusted using a proportional-integral-derivative mechanism based on the observed safety-cost return Jc [12]. Defining the safety-cost error as ι = Jc − b, the integral term I,which accumulates safety-cost errors across training iterations, is updated as I ← [I + κι ]λmax  
+
+> 0
+
+, where κ denotes the integral gain, λmax is the maximum allowable Lagrange multiplier, and 5  
+
+> 5000 10000 15000
+> Steps
+> 48 50 52 54 56 58
+> Time-average sum SINR [dB]
+> Safe WMBRL (Evaluation) PPO (Evaluation) DQN (Evaluation) Safe WMBRL (Training) PPO (Training) DQN (Training)
+
+(a)   
+
+> 5000 10000 15000
+
+Steps 
+
+> 00.05 0.1 0.15
+> Episode cost
+> Budget
+> Safe WMBRL (Training) PPO (Training) DQN (Training) Safe WMBRL (Evaluation) PPO (Evaluation) DQN (Evaluation)
+
+(b)    
+
+> 05000 10000 15000
+
+Steps 
+
+> 0510 15
+> Loss
+> World-model loss Decoder loss Reward negative log-likelihood Cost negative log-likelihood Continuation binary cross-entropy Reward critic Cost critic
+
+(c)     
+
+> 0.3 0.4 0.5 0.6 45 50 55 60 Safe WMBRL PPO DQN MSM SL UB
+
+(d)     
+
+> 0200 400
+> x [m]
+> 0100 200 300 400 500
+> y [m]
+> RZ Safe WMBRL PPO DQN MSM SL Users rI
+> rF
+
+(e) 
+
+Fig. 1: Performance evaluations: (a) time-averaged sum SINR versus training steps, (b) episode cost versus training steps, (c) learning losses versus training steps, (d) time-averaged sum SINR versus the maximum transmit power ( P max ), and (e) MBS trajectories. 
+
+[x]λmax  
+
+> 0
+
+= min {λmax , max {0, x }} denotes the clipping opera-tion. The derivative term ζ measures increases in safety cost between consecutive training iterations and is calculated as 
+
+ζ = max {0, J c−Jc,prev }, where Jc,prev denotes the safety-cost return from the previous iteration. Accordingly, the Lagrange multiplier is updated as λp = [ αι + I + τ ζ ]λmax  
+
+> 0
+
+, where α and τ
+
+denote the proportional and derivative gains, respectively. This mechanism penalizes safety-budget violations, encouraging the actor to improve long-term communication performance while satisfying constraints. IV. S IMULATION RESULTS 
+
+We consider an N = 10 -antenna MBS serving K = 2 
+
+users over T s = 100 time slots, each lasting δ = 0 .5 s. The MBS operates at a fixed height of B = 100 m within a 500 × 500 m 2 region, traveling from uI = (40 , 40) m to 
+
+uF = (460 , 460) m at a maximum speed of V max = 25 m/s. A circular RZ of radius RRZ = 120 m is centered at (350 , 250) 
+
+m. Unless otherwise stated, P max = 1 W, σ2 
+
+> k
+
+= −90 dBm, 
+
+ρ = 0 .9, and the reference channel gain is μ = −30 dB. The RSSM uses 256-dimensional deterministic and hidden states and 16 categorical latent variables with 16 classes each. We set the imagination horizon H = 12 , discount factor γ = 0 .997 ,TD( λ) parameter λ = 0 .95 , batch size 16 , and sequence length 
+
+32 . The world-model and actor/critic learning rates are 10 −4
+
+and 3 × 10 −5, respectively. The critics use 255 two-hot bins, with entropy coefficient η = 3 × 10 −4. Finally, the PID gains are (α, κ, τ ) = (1 , 0.2, 0.5) , with λmax = 1 and b = 0 .We evaluate the proposed WMBRL framework against four baselines: PPO, DQN, move-stop-move (MSM), and straight-line (SL). In the MSM scheme, the MBS moves to a feasible location with favorable channel conditions, remains stationary for a portion of the mission, and then moves to the final position. The SL scheme follows a direct trajectory with uniformly spaced positions. In addition, an upper-bound (UB) benchmark is established based on the minimum geometrically achievable distances between the MBS and the users. Fig. 1a shows that the proposed WMBRL framework achieves higher time-averaged sum SINR and faster con-vergence than PPO and DQN by optimizing policies over imagined trajectories, reducing the need for direct environment interactions. In contrast, DQN requires more interactions to converge, while PPO converges more slowly to a lower SINR. Fig. 1b shows that WMBRL rapidly reduces the constraint cost toward zero and maintains it near the prescribed budget, whereas DQN exhibits larger fluctuations and PPO achieves slower cost reduction. Furthermore, Fig. 1c shows that the total world-model loss decreases rapidly and stabilizes during train-ing. The decoder, reward, cost, and continuation prediction losses exhibit similar trends, reflecting improved prediction performance on the training data. In addition, the reward- and cost-critic losses generally decrease, indicating improved long-term return estimation. Fig. 1d shows that the time-averaged sum SINR increases with P max for all considered schemes. The proposed WM-BRL framework consistently outperforms the baselines, with average improvements of 7%, 9%, 5%, and 8% over PPO, DQN, MSM, and SL, respectively, while achieving perfor-mance close to the upper bound. Fig. 1e illustrates the MBS trajectories, showing that WMBRL learns an adaptive path that avoids the RZ and reaches the prescribed final location. In contrast, the other baselines follow RZ-avoiding trajectories, whereas the SL scheme intersects the RZ. V. C ONCLUSION 
+
+In this paper, we investigated the joint optimization of MBS trajectories and digital beamforming to maximize the time-averaged sum SINR under mobility, RZ, and transmit-power constraints. We developed a SafeDreamer-based WMBRL framework that learns system dynamics and optimizes the control policy over imagined trajectories, while incorporating constraints through action mappings and safety-cost signals. Simulation results demonstrated improved time-averaged sum SINR, sample efficiency, and constraint satisfaction compared with the considered baselines. REFERENCES [1] S. S. Hosseini et al. , “Age of information minimization in UAV-assisted covert communication: Trajectory and beamforming design,” 
+
+IEEE Trans. Wireless Commun. , vol. 25, pp. 15 425–15 440, Apr. 2026. [2] Z. Ning et al. , “Joint trajectory and beamforming optimization for UAV-ISAC secure communications,” IEEE Trans. Wireless Commun. , vol. 25, pp. 15 216–15 231, Apr. 2026. [3] S. Zhang et al. , “Joint trajectory and beamforming design for RIS–UAV-assisted NOMA-ISAC system,” IEEE Internet Things J. , vol. 13, no. 6, pp. 11 193–11 206, Dec. 2026. [4] Y. Wu et al. , “DRL-based joint beamforming and UAV deployment optimization for STAR-RIS-assisted over-the-air federated learning,” 
+
+IEEE Wireless Commun. Lett. , vol. 14, no. 12, pp. 3912–3916, 2025. [5] S. Sobhi-Givi et al. , “Efficient optimization in RIS-assisted UAV system using deep reinforcement learning for mmwave-NOMA 6G communi-cations,” IEEE Internet Things J. , vol. 12, no. 14, pp. 26 042–26 057, Mar. 2025. [6] A. R. Umar et al. , “Deep reinforcement learning for RIS-assisted multi-UAV MU-MISO communication networks: Sum-rate and energy efficiency maximization,” IEEE Open J. Veh. Technol. , vol. 6, pp. 2033– 2047, Jul. 2025. [7] G. Liu et al. , “DWM-RO: Decentralized world models with rea-soning offloading for SWIPT-enabled satellite-terrestrial hetnets,” 
+
+arXiv:2511.05972 , Jun. 2026. [8] K. Heo et al. , “Joint optimization of UAV trajectory and communication resources with complete avoidance of no-fly-zones,” IEEE Trans. Intell. Transp. Syst. , vol. 25, no. 10, pp. 14 259–14 265, Jun. 2024. [9] P. Bose et al. , “Computing shortest paths amid non-overlapping weighted disks,” Results in Mathematics , vol. 80, no. 5, p. 163, Jul. 2025. [10] W. Huang, J. Ji, C. Xia, B. Zhang, and Y. Yang, “Safedreamer: Safe reinforcement learning with world models,” arXiv:2307.07176 , 2024. [11] D. Hafner, J. Pasukonis, J. Ba, and T. Lillicrap, “Mastering diverse domains through world models,” arXiv:2301.04104 , Apr. 2024. [12] A. Stooke et al. , “Responsive safety in reinforcement learning by PID lagrangian methods,” Proc. 37th Int. Conf. Mach. Learn. (ICML) , vol. 119, pp. 9133–9143, 2020.

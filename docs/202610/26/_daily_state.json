@@ -1,0 +1,217 @@
+{
+  "date": "20261026",
+  "date_label": "",
+  "generated_at": "2026-10-26 23:20:53 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.25151v1",
+      "route": "202610/26/2610.25151v1-distributionally-robust-chance-constrained-reinforcement-learning-for-home-energy-management-under-electric-vehicle-uncertainty",
+      "title": "Distributionally Robust Chance-Constrained Reinforcement Learning for Home Energy Management under Electric Vehicle Uncertainty",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "机会约束马尔可夫决策过程与拉格朗日软演员评论家安全约束求解",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.29149v1",
+      "route": "202610/26/2610.29149v1-safter-safety-aware-filtering-through-explicit-recoverability-for-robust-reinforcement-learning-under-distribution-shift",
+      "title": "SAFTER: Safety-Aware Filtering Through Explicit Recoverability for Robust Reinforcement Learning under Distribution Shift",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "控制屏障函数过滤器与可恢复性，可迁移为离散安全层",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.27732v1",
+      "route": "202610/26/2610.27732v1-prescribed-performance-guided-safe-reinforcement-learning-for-roundabout-navigation-of-autonomous-vehicles",
+      "title": "Prescribed Performance Guided Safe Reinforcement Learning for Roundabout Navigation of Autonomous Vehicles",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "带控制障碍函数与严格安全保证的安全强化学习",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.28360v1",
+      "route": "202610/26/2610.28360v1-confessions-of-a-masked-mdp",
+      "title": "Confessions of a Masked MDP",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "在离散MDP中学习决定状态动作对是否允许的动作掩码",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.31829v1",
+      "route": "202610/26/2610.31829v1-sevi-safe-evidential-real-world-reinforcement-learning",
+      "title": "SEVI: Safe Evidential Real-World Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "安全评论家估计约束违反风险并在线覆盖不安全动作",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.26568v1",
+      "route": "202610/26/2610.26568v1-reward-objectives-for-robust-pomdps-a-law-preserving-equivalence-with-partially-observable-games",
+      "title": "Reward Objectives for Robust (PO)MDPs: A Law-Preserving Equivalence with (Partially Observable) Games",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "鲁棒MDP下的CVaR与熵风险度量及阈值判定",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.27214v1",
+      "route": "202610/26/2610.27214v1-deep-catastrophic-risk-aware-reinforcement-learning",
+      "title": "Deep catastrophic-risk-aware reinforcement learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "CVaR尾部风险优化与风险敏感强化学习",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.27293v1",
+      "route": "202610/26/2610.27293v1-vulnerability-analysis-for-safe-multi-agent-reinforcement",
+      "title": "Vulnerability Analysis for Safe Multi-Agent Reinforcement",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "安全多智能体强化学习的安全约束与安全代价界",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.27870v1",
+      "route": "202610/26/2610.27870v1-enumeration-guided-training-of-neural-hamilton-jacobi-safety-certificates",
+      "title": "Enumeration-Guided Training of Neural Hamilton-Jacobi Safety Certificates",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "基于Hamilton-Jacobi可达性分析的安全证书，为控制系统提供形式化安全保证",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.28106v1",
+      "route": "202610/26/2610.28106v1-temporal-difference-learning-of-probabilistic-reach-avoid-value-functions",
+      "title": "Temporal Difference Learning of Probabilistic Reach-Avoid Value Functions",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "可达-避障安全值函数与安全保证",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.28157v1",
+      "route": "202610/26/2610.28157v1-worst-case-bayesian-cvar-regret-bounds-for-episodic-markov-decision-processes",
+      "title": "Worst-Case Bayesian CVaR Regret Bounds for Episodic Markov Decision Processes",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "有限MDP中风险敏感CVaR遗憾上下界匹配",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.29187v1",
+      "route": "202610/26/2610.29187v1-a-decade-of-learning-based-control-from-theoretic-foundations-to-practical-deployment",
+      "title": "A Decade of Learning-Based Control: From Theoretic Foundations to Practical Deployment",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "综述稳定性与安全保证及基于学习的控制方法",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    },
+    {
+      "paper_id": "2610.29534v1",
+      "route": "202610/26/2610.29534v1-safe-world-model-for-joint-trajectory-and-beamforming-design-of-mobile-base-stations",
+      "title": "Safe World Model for Joint Trajectory and Beamforming Design of Mobile Base Stations",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "带移动与禁入区安全约束的约束马尔可夫决策过程",
+      "first_seen_at": "2026-10-26 23:20:53 UTC",
+      "updated_at": "2026-10-26 23:20:53 UTC"
+    }
+  ]
+}

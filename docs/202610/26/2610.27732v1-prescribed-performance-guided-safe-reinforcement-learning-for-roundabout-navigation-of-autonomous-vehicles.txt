@@ -1,0 +1,720 @@
+Title: Prescribed Performance Guided Safe Reinforcement Learning for Roundabout Navigation of Autonomous Vehicles
+
+URL Source: https://arxiv.org/pdf/2610.27732v1
+
+Published Time: Wed, 21 Oct 2026 00:53:49 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Prescribed Performance Guided Safe Reinforcement Learning for Roundabout Navigation of Autonomous Vehicles 
+
+Wenhan Li †, Yangrui Zhang †, Hang Zhou, Peiran Liu, and Yiding Ji ∗
+
+Abstract — Connected and Autonomous Vehicles (CAVs) face significant challenges in roundabout navigation due to dense traffic interactions and unpredictable agent behaviors, ne-cessitating high levels of adaptability and safety. While the combination of Reinforcement Learning (RL) and Model Pre-dictive Control (MPC) offers a promising approach, exist-ing frameworks suffer from a structural mismatch where pointwise RL decisions fail to align with MPC’s trajectory level optimization, and often lack rigorous safety guarantees. This work proposes RLTrajGen-PPMPC-CBF, a hierarchical framework for safe, smooth and comfort roundabout naviga-tion, which regulates the coupling between RL-based planning and MPC-based control. We employ Prescribed Performance Constraints (PPC) to enforce a gradual, stable convergence between reference trajectories and control outputs, ensuring MPC tracking performance remains consistent with intended behavior from RL. Additionally, a Control Barrier Function (CBF) layer provides real-time safety corrections that are fed back into the RL process. Simulation results in the MetaDrive environment demonstrate that our method achieves a 6.25% increase in average success rate and a 65.87% reduction in Motion Sickness Dose Value (MSDV) compared to the optimal baseline, meanwhile accelerating training convergence. 
+
+Index Terms — Connected and autonomous vehicles, deep reinforcement learning, model predictive control, prescribed performance control, control barrier functions 
+
+I. I NTRODUCTION 
+
+The advancement of Intelligent Transportation Systems (ITS) has accelerated the deployment of Connected and Autonomous Vehicles (CAVs), enabling them to navigate diverse urban environments [1]–[4]. Significant progress has been achieved in standard driving tasks, including lane keeping [5]–[7], lane changing [8], [9], and adaptive cruise control [10], [11]. However, roundabouts remain particularly challenging due to dense vehicle interactions and rapidly changing traffic conditions, where planning or control fail-ures may compromise both safety and ride comfort [5], [12]. Current autonomous driving approaches mainly fall into learning-based and model-based methods. Reinforcement Learning (RL) has demonstrated strong capability in high-dimensional perception and decision-making [13]–[16]. However, its model-free nature makes it difficult to explicitly incorporate vehicle dynamics and safety constraints [17], 
+
+Authors are all with Robotics and Autonomous Systems Thrust, Systems Hub, the Hong Kong University of Science and Technology (Guangzhou), Guangzhou, Guangdong Province, China. (Emails: {wli724, yzhang112, hzhou269, pliu868 }@connect.hkust-gz.edu.cn, jiyiding@hkust-gz.edu.cn). 
+
+> †
+
+Contributed equally; ∗Corresponding author. Financial support: National Natural Science Foundation of China grants 62303389, 62373289; Guangdong Scientific Research Platform and Project Scheme grant 2024KTSCX039 and Youth Talent Support Program of Guangdong Association for Science and Technology grant SKXRC2025463. ego       
+
+> RL TrajGen PPC MPC CBF RL MPC CBF RL MPC Uncontrol Zone Control Zone Crossable Line Non-crossable Line Control Output
+> (a) PPO-MPC (b) CBFG-PPO (c) Our Method
+
+Fig. 1: Comparison between the proposed method ( bottom left ) and baseline approaches ( upper left ). We constrain the errors between RL and MPC outputs in prescribed perfor-mance bounds to improve trajectory planning performance. [18]. In contrast, Model Predictive Control (MPC) explicitly considers system dynamics and constraints, while Control Barrier Functions (CBFs) have been widely integrated into MPC to provide formal safety guarantees [19]–[22]. Nev-ertheless, model-based approaches generally exhibit limited adaptability in highly dynamic environments. To combine the adaptability of RL with the capability to enforce safety and other constraints of MPC, hybrid RL-MPC frameworks have recently attracted increasing atten-tion [23]–[26]. Oliveira et al. [25] employed RL to determine discrete decision variables to accelerate MPC optimization, while Lubars et al. [26] combined DDPG with MPC, where MPC served as a safety backup for potentially unsafe RL actions. Zhang et al. [8] further incorporated a CBF safety filter into an RL-MPC framework (Fig. 1(b)). Nevertheless, these methods still suffer from a structural mismatch: RL produces pointwise decisions whereas MPC optimizes tra-jectories, limiting MPC’s ability to accurately realize the planning intent and resulting in less smooth trajectories in complex driving scenarios. Zhang et al. [8] introduced a CBFG-PPO framework (Fig. 1 (b)), where RL provides target states for MPC, and CBF filters unsafe actions and feeds corrections back to RL. Nevertheless, RL produces pointwise decisions while MPC optimizes over trajectories in this framework, which results in structural mismatch and limits MPC’s ability to accurately realize RL intent, producing less smooth trajectories for CAVs in complex environments. To address the mentioned issues, we propose a novel RLTrajGen-PPMPC-CBF framework, as illustrated in Fig. 1 (c), and validate its effectiveness in a roundabout scenario. The proposed framework consists of three key components: an RL-based Trajectory Generator (RLTrajGen) that facil-itates high-level decision making by producing reference arXiv:2610.27732v1 [cs.RO] 20 Oct 2026 trajectories, a prescribed performance MPC (PPMPC) that dynamically adjusts trajectory tracking within a predefined performance envelope, and a CBF-based safety filter that corrects unsafe behaviors. Specifically, we first introduce a trajectory generator that transforms the pointwise outputs of RL into reference trajectories for MPC tracking. In addition, we incorporate a prescribed performance constraint (PPC) mechanism to progressively reduce the tracking error, enabling MPC to more accurately follow the trajectories generated by RL. This design improves the consistency between planning and control, facilitating more stable policy learning and enhanced navigation performance. The main contributions of this work are summarized below: 1) We design a trajectory generation mechanism that con-verts single-step outputs from RL into trajectories with adaptive parameters for MPC tracking, thereby effectively resolving the structural mismatch between RL and MPC and significantly accelerating the convergence of training. 2) We utilize PPC to regulate the coupling between RL-based planning and MPC-based control, which is the first one in RL-MPC hierarchical framework to our best knowledge. Our method facilitates the progressive reduc-tion of trajectory tracking errors between the planning and control layers, thus balancing the adaptability to complex scenarios and the safety for autonomous systems, and im-proving ride comfort by producing smoother trajectories. The remaining sections are organized as follows. Sec-tion II introduces the dynamic model of CAVs, prescribed performance constraints, control barrier functions, and for-mulates the safe navigation problem. Section III presents the RLTrajGen-PPMPC-CBF framework. Section IV includes simulation results and compares our approach with baselines. Section V concludes the paper and outlines future directions. II. P RELIMINARIES AND PROBLEM FORMULATION 
+
+A. System Model 
+
+The discrete-time dynamics of a CAV is modeled as 
+
+xk+1 = f (xk, uk) (1) where the state xk = [ xk, y k, v k, θ k]T includes longitudinal and lateral positions, speed, and heading, respectively. The control input uk = [ ak, δ k]T comprises acceleration and steering. For the sake of discussion, we adopt the kinematic bicycle model to discretize the dynamics: 
+
+
+
+xk+1 
+
+yk+1 
+
+vk+1 
+
+θk+1 
+
+ =
+
+
+
+xk + vk cos( θk + βk) · Ts
+
+yk + vk sin( θk + βk) · Ts
+
+vk + ak · Ts
+
+θk + vk sin βk
+
+lr
+
+· Ts
+
+ (2) where Ts is the sampling period, lf and lr represent the distances from the front and rear wheels to the center of mass, and βk is the slip angle defined as βk = arctan(tan δk ·
+
+lr /(lf + lr )) . This model allows for iterative prediction of future vehicle states. 
+
+B. Prescribed Performance Constraints 
+
+To ensure asymptotic error convergence, the tracking error 
+
+e(t) can be constrained within a shrinking bound: 
+
+−σLp(t) < e (t) < σ Rp(t) (3) where the performance function p(t) satisfies: 1) it is smooth, strictly positive, and monotonically decreasing; 2) lim 
+
+> t→0
+
+p(t) = 
+
+p0, lim 
+
+> t→∞
+
+p(t) = p∞, with p0 > p ∞ > 0. From [27], we utilize the form p(t) = ( p0 − p∞)e −ιt + p∞, with decay rate ι ∈ [0 , 1] . To incorporate PPC into controller design, the constrained error is transformed into an unconstrained one via e(t) = Ξ( ζ)p(t), where Ξ( ζ) is smooth, strictly increasing, bounded as Ξ( ζ) ∈ (−σL, σ R) and given by: 
+
+Ξ( ζ) = σReζ − σLe−ζ
+
+eζ + e −ζ , ζ = 12 ln e(t)/p (t) + σL
+
+σR − e(t)/p (t) . (4) 
+
+C. Control Barrier Functions 
+
+For system dynamics (1), a superlevel safe set C is induced by a continuously differentiable function h : Rn → R as: 
+
+C = {x ∈ Rn | h(x) ≥ 0},∂C = {x ∈ Rn | h(x) = 0 },
+
+Int( C) = {x ∈ Rn | h(x) > 0}.
+
+(5) And h(·) is defined as a discrete-time CBF [28] if it satisfies 
+
+h(xk+1 ) − (1 − γk)h(xk) ≥ 0, γk ∈ (0 , 1] (6) which guarantees the forward invariance of the safe set C.By designing the control input uk to satisfy (6), the system remains within C for all t > 0 to maintain safe operation. 
+
+D. Problem Formulation 
+
+A vehicle navigates in a two-dimensional roundabout (see Fig. 1), where other vehicles appear randomly. Let Iov =
+
+{i | i ∈ Z≥0} represent the index set of vehicles within the control zone. When a new vehicle enters, the smallest unused index inew = min {i ∈ Z≥0 | i / ∈ Iov } is assigned. This index is subsequently removed when the vehicle exits, ensuring a dynamic mapping between indices and vehicles. To achieve safe and efficient roundabout navigation, the ego vehicle is required to optimize three objectives: travel time, control effort, and safety, which are later incorporated into the RL reward design and MPC optimization formulations. 
+
+Definition 1 (Travel Time) . The travel time for the ego vehicle to reach the destination is defined as a positive stage objective function r1(x) and should be minimized: 
+
+J1 = tT − t0 =
+
+Z +∞
+
+> t0
+
+δ(pτ ) d τ = Φ 
+
+Z +∞
+
+> t0
+
+r1(xτ ) d τ
+
+
+
+(7) 
+
+where pτ = (xτ , y τ ) is the ego vehicle position, δ(pτ )
+
+indicates whether the destination set XT has been reached, and Φ( ·) is a strictly increasing mapping. 
+
+Definition 2 (Energy Consumption) . Given a positive control cost function C(·), minimize the accumulated energy cost: 
+
+J2 =
+
+Z tT
+
+> t0
+
+C(uτ ) d τ (8) Reinforcement Learning CBF-based safety filter 
+
+> Actor Critic
+
+Trajector Generator 
+
+# ... Traj MPC with PPC-based cost   
+
+> error Preset MPC
+> Error Transformation Kinematic Model CG Pyhisical Constraints
+
+cost function constraints constraints cost function 
+
+> Collision Constraints
+
+Simulation Environment 
+
+> Ego state Navigation Surroundings observation acceleration steering angle reward
+
+Fig. 2: Overview of RLTrajGen-PPMPC-CBF framework. The RL module (top left) maps observations from the environment (top right) to actions (qt, wt). The action qt is processed by the trajectory generator (bottom left) to construct Trajectory Generator Gt and produce a prediction sequence z∗ 
+
+> t
+
+of length np, which is then used to solve an MPC problem yielding 
+
+uMPC t . This control input is refined by the CBF module (bottom right) to obtain uCBF t , which is applied to the environment to generate rewards for RL training. 
+
+Definition 3 (Safety Penalty) . Each vehicle should maintain a minimum safe distance δ from its surrounding vehicles, i.e., dist( pt, pov i 
+
+> t
+
+) ≥ δ. Safety violations are quantified by a positive function r2(p, pov ) and the cumulative penalty is 
+
+J3 =
+
+Z tT
+
+> t0
+
+r2(pτ , pov i 
+
+> τ
+
+) d τ, (9) 
+
+where larger r2(·) corresponds to more severe violations. 
+
+Problem 1 (Roundabout Navigation of CAVs) . Given a CAV modeled by (1) , design the optimal control law u for safe navigation of the CAV and minimize the objective function: 
+
+min 
+
+> x,u
+
+Z +∞
+
+> t0
+
+h
+
+r1(xτ ) +  C(uτ ) + r2(pτ , pov i 
+
+> τ
+
+)δ(pτ )
+
+i
+
+dτs.t. 
+
+ xτ ∈ C safe 
+
+umin ≤ u ≤ umax 
+
+(10) 
+
+where umin , umax denote the lower and upper bounds of u,respectively, and Csafe defined from (5) denotes the safe set for collision avoidance of the vehicles. 
+
+III. HIERARCHICAL FRAMEWORK FOR SAFE NAVIGATION 
+
+A. Framework Overview 
+
+The proposed framework consists of three coupled layers, as illustrated in Fig. 2: 1) a high-level decision-making layer that specifies reference motion intentions through a learned policy; 2) a low-level control layer that tracks the resulting reference trajectory and computes control inputs based on the dynamic model; and 3) a safety mediation layer that corrects unsafe behaviors during execution. In general, the framework follows a standard reinforce-ment learning training and evaluation pipeline. At each time step, the high-level agent produces actions that generate a reference state sequence z∗ 
+
+> t
+
+of length np:
+
+z∗ 
+
+> t
+
+= {z∗
+
+> t+i
+
+} = {(v∗
+
+> t+i
+
+, θ ∗
+
+> t+i
+
+) | i = 0 , 1, · · · , n p − 1} (11) where z∗ 
+
+> t
+
+represents the desired future motion of the ego vehicle. The low-level controller is responsible for tracking this reference trajectory, and the corresponding tracking error 
+
+e incorporated into the cost function MPC is given as: 
+
+e = dist( zt, z∗ 
+
+> t
+
+) (12) where zt denotes the trajectory generated by MPC and 
+
+dist( ·) measures the deviation from the reference. After any potentially unsafe action output from the MPC is corrected using a CBF-based filter, the resulting control input ut =[at, δ t]T is applied to the simulated vehicle. This interaction with the environment yields a reward, thereby completing one training iteration. 
+
+B. RL-based Trajectory Generator 
+
+The surrounding environment is perceived through on-board sensors, such as LiDAR, and encoded into a 259 -TABLE I: Rewards Composition                     
+
+> Reward Explanation Definition
+> r1
+> rdest Progress to destination ∥lt−lt−1∥
+> rspeed Speed regulation vt/v max
+> rsteer Steering change penalty −∥ θt−θt−1∥
+> rterminal Terminal reward 10 if arrived, else 0
+> r2
+> rcrash Crash penalty −5if crash, else 0
+
+dimensional observation vector. This vector contains various parameters including the vehicle speed vt, steering angle 
+
+δt, previous throttle/brake command ut−1, previous steering angle δt−1, yaw rate rt, heading difference to the lane 
+
+∆ψ, distances to the left and right lane boundaries dL
+
+and dR, lateral lane position plat , projected distances along the lane heading d∥, projected lateral distances d⊥, lane curvature radius R, turn direction flags C, lane angles θ,and surrounding LiDAR features ssur t .The action space includes adjustable parameters for a generated reference trajectory and its prescribed performance tracking weights. Specifically, the action is defined as at =(qt, wt). wt = [wvt , w θt ] ∈ R2 is a weight vector that adjusts the strictness of the prescribed trajectory tracking performance in the MPC. qt = [ν∗ 
+
+> t
+
+, κ ∗ 
+
+> t
+
+] ∈ R2 specifies the structure of a Trajectory Generator Gt(xt; qt) : R4 →
+
+R2×np and helps to generate the reference trajectory by the following state transition function: 
+
+
+
+v∗ 
+
+> t+i
+
+= ν∗ 
+
+> t
+
+, i = 0 , · · · , n p − 1,θ∗ 
+
+> t+i
+
+= θ∗ 
+
+> t+i−1
+
++ v∗
+
+> t+i−1
+
+κ∗ 
+
+> t
+
+∆t, i = 1 , · · · , n p − 1,θ∗ 
+
+> t
+
+= θt.
+
+(13) Fig. 3 illustrates a segment of the resulting reference tra-jectory. The velocity profile is piecewise constant, while the heading angle evolves as a continuous piecewise linear function. By modifying the Trajectory Generator, different reference trajectory shapes can be obtained. Based on the optimal control problem defined in (10), two reward terms are designed: r1 for goal-reaching behavior and 
+
+r2 for collision avoidance, which are presented in Table I in detail. Specifically, r1 is composed of four components as 
+
+r1 = rdest + rspeed + rsteer + rterminal . Here, rdest = ∥lt −
+
+lt−1∥ measures progress toward the goal, rspeed = vt/v max 
+
+encourages efficient motion, rsteer = −∥ θt −θt−1∥ penalizes abrupt steering changes, and rterminal = 10 is assigned upon successful arrival. Meanwhile, the collision-related reward is defined as r2 = rcrash , where rcrash = −5 in the event of a collision and 0 otherwise. Proximal Policy Optimization (PPO) is adopted for policy learning. The policy network πθ (at|ot) generates actions from observations, while the value network Vω (ot) esti-mates the state value. The Generalized Advantage Estimation (GAE) is computed as 
+
+ˆAt = δt + γλ (1 − dt+1 ) ˆAt+1 , (14) 
+
+δt = rt + γ(1 − dt+1 )Vt+1 − Vt (15) where Vt = Vω (ot) represents the value function, rt denotes 0 20 40 60 80 100 246810 Continuous Discrete/Constant Discrete/ Discrete/ Discrete/ Step Time 
+
+Fig. 3: ( left ) Discrete-time performance verification for five cases: continuous-time baseline, constant weight( e−ι∆t), and random weights from normal distributions N ∼ (e −ι∆t, σ 2)
+
+where σ = 0 .1/0.2/0.3. ( right ) Schematic of the reference Trajectory Generator parameterized by (ν∗ 
+
+> t
+
+, κ ∗ 
+
+> t
+
+).
+
+Fig. 4: The establishment of collision avoidance diagrams. the reward, dt indicates episode termination, γ is the discount factor, and λ controls the bias–variance trade-off. The loss functions of the two networks in PPO are defined: 
+
+LCLIP (θ) = ˆEt[min( rt(θ) ˆAt, clip( rt(θ), 1 − ε, 1 + ε) ˆAt)] ,
+
+(16) 
+
+L(ω) = ˆEt[( rt + γV ω (ot+1 ) − Vω (ot)) 2] (17) where clip is a clipping function that constrains rt(θ) to 
+
+[1 − ε, 1 + ε], and rt(θ) := πθ (at|ot)/π θold (at|ot). The final training objective is a weighted combination of the policy and value losses: 
+
+Lfinal = a1LCLIP (θ) + a2L(ω), a i ∈ (0 , 1) , i = 1 , 2. (18) 
+
+C. MPC with PPC-based cost 
+
+Prescribed performance constraints (PPC) progressively shrinks the error bounds, ensuring that the error asymptoti-cally converges to a specified value. This characteristic can be directly integrated into the construction of dist( zt, z∗ 
+
+> t
+
+) in (12). Given that dist( zt, z∗ 
+
+> t
+
+) is evaluated in discrete time, the performance function in PPC must first be discretized. Denoting the sampling interval as ∆t and defining a discrete-time performance function pk = p(k∆t), we obtain: 
+
+pk+1 = p(( k + 1)∆ t) = wp k + (1 − w)p∞ (19) Following [29], [30], the parameter w = exp( −ι∆t) is treated as time-varying, i.e., w = wk := w(k). Then, (19) can be rewritten as: 
+
+pk+1 = wkpk + (1 − wk)p∞, k = 0 , 1, . . . , +∞ (20) The effectiveness of (20) can be verified in Fig. 3. The error transformed by this discrete-time performance metric is used to define the distance function: 
+
+dist( zt, z∗ 
+
+> t
+
+) = dist([ vt, θ t], [v∗ 
+
+> t
+
+, θ ∗ 
+
+> t
+
+]) = Ξ−1(¯ evt ), Ξ−1(¯ eθt ) (21) where the normalized errors ¯evt , ¯eθt are defined as 
+
+¯evt = vt − v∗
+
+> t
+
+pvτ
+
+, ¯eθt = θt − θ∗
+
+> t
+
+pθτ
+
+. (22) Here, pvτ and pθτ are the discrete-time performance functions for v and θ, respectively. The two performance functions correspond to weights wt = [ wvt , w θt ] ∈ R2 introduced in Sec.III-B. The PPC timer is reset at the beginning of each episode, and τ denotes the relative time within the episode. With the defined PPC-based distance function, the MPC problem is then formulated as 
+
+min  
+
+> u
+
+J(zt+np 
+
+> t
+
+, ut+np−1 
+
+> t
+
+) = 
+
+> np−1
+
+X
+
+> i=0
+
+dist( zt+i, z∗
+
+> t+i
+
+)
+
+| {z }
+
+> state error
+
++ ∥ut+i∥
+
+| {z } 
+
+> control cost
+
+ + dist( zt+np , z∗ 
+
+> t+np
+
+)
+
+| {z }
+
+> terminal cost
+
+s.t. 
+
+
+
+xt+i+1 = ˆf (xt+i, ut+i),
+
+zt+i = [ 02×2, I2×2]xt+i,
+
+umin ≤ ut+i ≤ umax , i = 0 , . . . , n p − 1
+
+(23) where 02×2 and I2×2 denote the zero and identity matrices, respectively, and ˆf follows the dynamics in (2). Solving (23) yields the optimal state and control sequences. We define 
+
+xMPC  
+
+> t
+
+= xt+1 , zMPC  
+
+> t
+
+= [ 02×2, I2×2]xMPC  
+
+> t
+
+, and denote the applied control as uMPC  
+
+> t
+
+, which will be used in Sec.III-D. 
+
+D. CBF-based safety filter 
+
+CBF is employed to synthesize a safety filter to correct potentially unsafe behaviors generated by MPC. In a round-about scenario, the primary safety objective is to avoid inter-vehicle collisions. To this end, each vehicle is approximated by an ellipse, which enables a quantitative formulation of collision-avoidance constraints. As illustrated in Fig. 4, a vehicle is first approximated by a rectangle and then enclosed by a circumscribed ellipse. Let a and b denote the semi-major and semi-minor axes, respectively. The equation of a non-rotated ellipse centered at xo is (x − xo)T D(x − xo) = 1 ,where D = diag(1 /a 2, 1/b 2).For an ellipse rotated by an angle θ, a coordinate transformation is applied using the rotation matrix Rθ =[cos θ, sin θ; − sin θ, cos θ], yielding (x−xo)T RTθ DR θ (x−
+
+xo) = 1. Then, let Qθ = RTθ DR θ . To compute the distance between two ellipses, consider the line connecting their centers, along which a point is given by x = xo + et,where e is the unit direction vector. Substituting into the ellipse equation yields t = 1 /peT Qθ e. Accordingly, the distance between the boundaries of two ellipses is defined as dF(x) = ∥eo1,2 ∥ − 1/peT Qθ e − 1/peT Qφe, where 
+
+eo1,2 = xo1 − xo2 and e = eo1,2 /∥eo1,2 ∥. The obstacle-avoidance function is then defined as h(x) = dF(x) − dmin .For clarity, only one safety constraint is considered here. The resulting CBF optimization problem is formulated as: 
+
+min  
+
+> u
+
+J(ut) = ∥ut − uMPC  
+
+> t
+
+∥
+
+s.t. 
+
+ xt+1 = ˆf (xt, ut),h(xt+1 ) − (1 − γ)h(xt) ≥ 0.
+
+(24) Density : 0.2   
+
+> Mode : respawn
+> Horizon : 1000
+> MetaDrive
+> Param Description Value
+> RL MPC
+> epoch learning rate total sample steps max buffer size gamma lambda value loss coef predicted steps control time domain time interval
+
+Fig. 5: ( left ) Simulation environment diagram. ( right ) Train-ing Hyperparameter Table. Solving (24) yields xt+1 and ut, which are denoted as 
+
+xCBF  
+
+> t
+
+= xt+1 and uCBF  
+
+> t
+
+= ut. The corresponding state representation is defined as zCBF  
+
+> t
+
+= [ 02×2, I2×2]xCBF  
+
+> t
+
+.Inspired by [8], the policy loss term in (16) is strategically modified to allow the reinforcement learning agent to learn CBF-induced corrective behavior: 
+
+LCLIP (θ) = 
+
+
+
+case 1 ∥zCBF  
+
+> t
+
+− zMPC  
+
+> t
+
+∥ < δ z
+
+ˆEt[min( rt(θ) ˆAt, clip( rt(θ), 1 − ε, 1 + ε) ˆAt)] ,
+
+case 2 ∥zCBF  
+
+> t
+
+− zMPC  
+
+> t
+
+∥ ≥ δz
+
+ˆEt[zCBF  
+
+> t
+
+− [I2×2, 02×1]μt(θ)] .
+
+(25) Here, δz denotes the threshold beyond which the CBF intervention is considered significant. If that is the case, the original loss term is replaced by case 2 , encouraging the policy mean μt(θ) = Eat∼πθ (at|ot)[at] ∈ R4 to better align with the CBF-corrected state. IV. E XPERIMENTS 
+
+A. Simulation Platform Setup 
+
+The roundabout simulation environment is built in MetaDrive and is illustrated in Fig. 5, with some key parameters specified as follows. The computer running rein-forcement learning training is equipped with an AMD EPYC 7453 processor, with CUDA version 12.9 and Python version 3.11.4. During training, four parallel environments are used for sampling, followed by training on an NVIDIA RTX 4090 GPU. A fixed random seed is set at the initialization of each process to ensure the reproducibility of the experiments. The key hyperparameters of the framework listed in Fig. 5 have been manually carefully tuned. 
+
+B. Benchmark Comparison 
+
+We select three baselines as the main comparison methods, namely PPO-only, PPO-MPC, and CBFG-PPO from [8]. De-tailed descriptions of these methods are provided in Table II. During training, a monitor is employed to record the average reward(AR) and average success rate(ASR) of each episode. The collected data are smoothed using a sliding window and are illustrated in Fig. 6 and Fig. 7. As shown in these figures, 
+
+M6 achieves the highest AR and ASR, reaching 178.05 and 96.25%, respectively. These results outperform PPO-only (AR 156.74, ASR 67.50%), PPO-MPC (AR 159.18, TABLE II: Methods Overview 
+
+Index Name Description 
+
+Benchmark M1 PPO-only The RL policy directly outputs control com-mands [a, δ ] to the simulator, following the official MetaDrive tutorial [31] and serving as a standard baseline. 
+
+M2 PPO-MPC RL provides high-level decisions, while MPC acts as the low-level controller, with-out additional coupling modules. 
+
+M3 CBFG-PPO A safety-augmented variant of M1 that in-corporates a CBF layer to enforce safety constraints and guide subsequent updates in the learning process [8]. 
+
+Ablation M4 
+
+RLTrajGen-MPC-CBF Replaces the RL module in M3 with RLTra-jGen to generate a reference trajectory for MPC tracking. 
+
+M5 
+
+RL-PPMPC-CBF Replaces the MPC module in M3 with PPMPC, applying progressive penalties to tighten trajectory tracking errors. 
+
+M6 Our Method The full RLTrajGen-PPMPC-CBF frame-work, combining RL-based trajectory gener-ation with progressively constrained MPC. 
+
+ASR 63.75%), and CBFG-PPO (AR 161.59, ASR 77.50%). Otherwise, among all methods, M6 exhibits the fastest convergence. Specifically, it converges within approximately 1300 steps, whereas the other baseline methods typically require about 3000–5000 steps for convergence. The optimal policy from each method is implemented in the ego vehicle and assessed in the simulation environment. Fig. 8 illustrates the changes in velocity, heading angle, acceleration, and steering angle during driving, while Fig. 9 displays the actual driven trajectory. Compared to the baselines, our method keeps acceleration and steering angle within a narrower range, ensuring smoother and safer vehicle behavior. Additionally, our approach employs a distinct route planning strategy by selecting lanes with fewer surrounding vehicles and executing gradual lane changes at lower speeds, thereby enhancing ride comfort in autonomous scenarios. 
+
+C. Ride comfort and behavior 
+
+To evaluate the comfort of algorithms during driving, appropriate metrics must be selected. Following the ISO 2631 standard, the weighted root-mean-square (RMS) of each acceleration component is commonly used to measure vehicle roughness [32]. Accordingly, the motion sickness dose value (MSDV) is adopted as an indicator of motion sickness and is defined as: 
+
+MSDV = 
+
+sZ T
+
+> 0
+
+[˜ a(t)] 2 dt (26) where T denotes the duration of observation and ˜a(t) repre-sents the weighted acceleration (including both longitudinal and lateral components). Given both longitudinal and lateral Our Method          
+
+> 01000 2000 3000 4000 5000 6000 025 50 75 100 125 150 175
+> 5000 5400 5800 6200 178.05 6600 120 130 140 150 160 170 180 170.02 161.59 159.18 138.68 156.74 PPO-only PPO-MPC CBFG-PPO RLTrajGen-MPC-CBF RL-PPMPC-CBF 178.05 156.74 159.18 161.59 1138.68 170.02 Benchmark Ablation
+
+Fig. 6: AR evolution curves of all methods during training. 0 20 40 60 80 0% 20% 40% 60% 80% 100% 96.25% 90.00% 90.00% 67.50% 63.75% 77.50% 38.75% Our Method PPO-only PPO-MPC CBFG-PPO RLTrajGen-MPC-CBF RL-PPMPC-CBF Benchmark  Ablation 
+
+Fig. 7: ASR evolution curves of all methods during training. accelerations, the discrete forms of MSDV are presented as: 
+
+MSDV V =
+
+vuut 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+a2
+
+> x,i
+
+, MSDV L =
+
+vuut 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+a2 
+
+> y,i
+
+(27) where ax,i is the longitudinal acceleration at time step i,directly obtained from the simulation. ay,i is the lateral accel-eration at time step i, estimated by ay,i = ( δi+1 − δi)vi/∆t.In addition to MSDV, human perception is particularly sensitive to changes in acceleration, motivating the use of JERK as another comfort metric, defined as: 
+
+JERK = 
+
+sZ T
+
+> 0
+
+ da
+
+dt
+
+2
+
+dt (28) Its discrete longitudinal and lateral forms are given by: 
+
+JERK V =
+
+vuut NX
+
+> i=1
+
+diff( ax,i )2, JERK L =
+
+vuut NX
+
+> i=1
+
+diff( ay,i )2
+
+(29) All methods in Table II are evaluated using the MSDV and JERK metrics, and the corresponding results are illustrated in Fig. 10. M6 achieves the lowest values in MSDV V (0.457), 
+
+MSDV L (0.449), and JERK L (8.815). Although its JERK V
+
+value (2.483) is slightly higher than that of M1 (1.714) and 
+
+M5 (2.229), the proposed method overall demonstrates the best ride comfort among all evaluated approaches. 0 50 100 150 200 250 300 350 0 50 100 150 200 250 300 350 0 50 100 150 200 250 300 350 0 50 100 150 200 250 300 350 0510 0510 0510 0510 0510 0510 -1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01-1 01VELOCITY ACCELERATE STEERING ANGLE Our Method PPO-only PPO-MPC CBFG-PPO RLTrajGen -MPC-CBF RL-PPMPC -CBF HEADING ANGLE Fig. 8: Velocity, heading angle, acceleration, and steering angle profiles compared with baselines and ablation studies. 0 25 50 75 100 125 150 175 0-5 -10 -15 -20 -25 5type 1 type 2 Our Method PPO-only PPO-MPC CBFG-PPO RLTrajGen-MPC-CBF RL-PPMPC-CBF 
+
+Fig. 9: Visualized real-time trajectories for various methods. TABLE III: Indicator Comparison                                           
+
+> Method Avg. Rwd Avg. Succ. Rate MSDV VMSDV LJERK VJERK L
+> M1 156.74 67.50% 0.643 2.216 1.714 49.97
+> M2 159.18 63.75% 0.997 3.077 4.005 67.49
+> M3 161.59 77.50% 0.991 2.863 4.555 62.76
+> M4 138.68 38.75% 0.992 2.697 2.915 66.55
+> M5 170.02 90.00% 0.458 2.229 2.229 14.81
+> M6 178.05 96.25% 0.457 0.690 2.483 8.815
+
+D. Ablation Study and Analysis 
+
+To validate the effectiveness of RLTrajGen and PPMPC, we conducted two ablation experiments: RLTrajGen-MPC-CBF and RL-PPMPC-CBF. These experiments are designed to explore the individual contributions of each module. Detailed descriptions of the methods can be found in Table II. 
+
+1) Effect of the RLTrajGen module: The replacement of the RL module in M3 with the RLTrajGen module results in M4 . In terms of AR, M4 demonstrates faster convergence compared to M3 , indicating that RLTrajGen significantly en-hances convergence speed. However, the overall performance of M4 is notably inferior to that of other benchmarks, sug-gesting that merely incorporating RLTrajGen is not sufficient for optimal results. In addition, M5 removes the RLTrajGen module from the complete framework M6 . The experimental results show that M6 achieves faster convergence in both AR and ASR than M5 . These findings indicate that the Trajectory 0 1 2 3 4 5 0 1 2 3 4 501234010 20 30 40 50 60 70 2.483 1.714 4.005 4.555 2.915 2.229 8.815 49.97 67.49 62.76 66.55 14.81 MSDV V        
+
+> 0.0 0.2 0.4 0.6 0.8 1.0 0.0 0.5 1.0 1.5 2.0 2.5 3.0 0.457 0.643 0.997 0.991 0.992 0.458 0.449 2.216 3.077 2.863 2.697 0.690 Our Method PPO-Only PPO-MPC CBFG-PPO RLTrajGen -MPC-CBF
+> RL-PPMPC -CBF
+> Our Method PPO-Only PPO-MPC CBFG-PPO RLTrajGen -MPC-CBF
+> RL-PPMPC -CBF
+
+MSDV L
+
+JERK V JERK L
+
+Fig. 10: Comparison of MSDV and JERK .Generator resolves the structural mismatch between RL and MPC which accelerated the agent’s learning process. 
+
+2) Effect of the PPMPC module: M5 is obtained by replacing the MPC module in M3 with PPMPC. This leads to a substantial change in vehicle behavior: the overall profiles of velocity, heading angle, acceleration, and steering angle reduce to fewer oscillations, resulting in a smoother trajectory in Fig. 9. This improvement arises because tra-ditional MPC often neglects the cost induced by trajectory tracking errors, focusing instead on reducing control effort, which can gradually deteriorate performance. Meanwhile, constraining trajectory tracking errors with fixed weights is generally impractical: if the weight is set too small, MPC may ignore trajectory errors, whereas if it is set too large, the optimization problem may become infeasible. Therefore, the PPMPC module needs to be integrated with RL for more flexible parameters. By comparing the average success rate of M5 and M3 , PPMPC substantially improves safety, increasing the success rate from 77.50% to 96.25%. In addition, PPMPC achieves markedly better performance in terms of MSDV and JERK than M3 , further demonstrating enhanced ride comfort. V. C ONCLUSION 
+
+This work proposes a hierarchical learning based control framework for roundabout navigation of CAVs. Our approach tackles the oscillation issues caused by the structural mis-match between RL and MPC to facilitate smoother and more gradual decision-making. Trajectories are generated from RL policies and utilized to solve an MPC problem with PPC defined costs. Safety is ensured by a CBF layer, allowing the agent to learn the revised actions. Simulations on the MetaDrive platform validate the superior performance of our algorithm through the construction and modular comparison of five baseline methods. Our framework not only achieves the highest average reward and success rate, but also returns the smoothest trajectory measured by MSDV and JERK, demonstrating its potential for real-world driving scenarios. Future research will extend this framework to enhance nav-igation robustness in more complex dynamic environments. REFERENCES [1] H. U. Ahmed, Y. Huang, P. Lu, and R. Bridgelall, “Technology developments and impacts of connected and autonomous vehicles: An overview,” Smart Cities , vol. 5, no. 1, pp. 382–404, 2022. [2] M. M. Rana and K. Hossain, “Connected and autonomous vehicles and infrastructures: A literature review,” International Journal of Pavement Research and Technology , vol. 16, no. 2, pp. 264–284, 2023. [3] Z. Huang, C. Zhang, R. Zhang, Y. Ji, J. Hong, B. Gao, and Q. Liu, “A differentiable constraint-aware motion planning module for unsuper-vised trajectory optimization,” in IEEE 28th International Conference on Intelligent Transportation Systems , pp. 1294–1300, 2025. [4] H. Zhou, Q. Zhang, P. Liu, Y. Qin, Z. Yan, and Y. Ji, “Physics-informed diffusion Mamba transformer for real-world driving,” in 
+
+IEEE International Conference on Robotics and Automation , 2026. [5] F. Ding, K. Zhu, J. Liu, C. Peng, Y. Wang, and J. Lu, “Adaptive mem-ory event-triggered output feedback finite-time lane-keeping control for autonomous heavy truck with roll prevention,” IEEE Transactions on Fuzzy Systems , vol. 32, no. 12, pp. 6607–6621, 2024. [6] S. Pachpol, C. C. Vignesh, J. G. Jeslin, B. P. Kumar, C. Viswanathan, and C. Srinivasan, “Enhanced lane keeping assistance through iot sensor fusion and deep learning,” in Second Intl. Conf. on Intelligent Cyber Physical Systems and Internet of Things , pp. 419–424, 2024. [7] F. Ding, Z. Liu, Y. Wang, J. Liu, C. Wei, A.-T. Nguyen, and N. Wang, “Intelligent event triggered lane keeping security control for autonomous vehicle under dos attacks,” IEEE Transactions on Fuzzy Systems , vol. 33, no. 10, pp. 3595–3608, 2025. [8] C. Zhang, L. Dai, H. Zhang, and Z. Wang, “Control barrier function-guided deep reinforcement learning for decision-making of au-tonomous vehicle at on-ramp merging,” IEEE Transactions on Intel-ligent Transportation Systems , vol. 26, no. 6, pp. 8919–8932, 2025. [9] Z. Wang, H. Yan, C. Wei, J. Wang, S. Bo, and M. Xiao, “Research on autonomous driving decision-making strategies based deep rein-forcement learning,” in Proc. of the 4th International conference on internet of things and machine learning , pp. 211–215, 2024. [10] Y. He, B. Ciuffo, Q. Zhou, M. Makridis, K. Mattas, J. Li, Z. Li, F. Yan, and H. Xu, “Adaptive cruise control strategies implemented on experimental vehicles: A review,” in 9th IFAC Symposium on Advances in Automotive Control , pp. 21–27, 2019. [11] L. Xiao and F. Gao, “A comprehensive review of the development of adaptive cruise control systems,” Vehicle system dynamics , vol. 48, no. 10, pp. 1167–1192, 2010. [12] R. Nakaya, T. Harada, Y. Miura, K. Hattori, and J. Matsuoka, “Explo-ration of deep reinforcement learning method for cooperative control of connected automated vehicles at a roundabout,” Artificial Life and Robotics , pp. 1–17, 2025. [13] G.-P. Antonio and C. Maria-Dolores, “Multi-agent deep reinforcement learning to manage connected autonomous vehicles at tomorrow’s intersections,” IEEE Transactions on Vehicular Technology , vol. 71, no. 7, pp. 7033–7043, 2022. [14] M. Zhou, Y. Yu, and X. Qu, “Development of an efficient driving strat-egy for connected and automated vehicles at signalized intersections: A reinforcement learning approach,” IEEE Transactions on Intelligent Transportation Systems , vol. 21, no. 1, pp. 433–443, 2019. [15] Q. Liu, Y. Tang, X. Li, K. Wang, F. Yang, and Z. Li, “Curiosity-driven reinforcement learning with graph transformers for decision-making in connected and autonomous vehicles,” Transportation Research Part C: Emerging Technologies , vol. 177, p. 105183, 2025. [16] P. Hu, “Comocavs: Cohesive decision-guided motion planning for connected and autonomous vehicles with multi-policy reinforcement learning,” arXiv preprint arXiv:2507.14903 , 2025. [17] L. Brunke, M. Greeff, A. W. Hall, Z. Yuan, S. Zhou, J. Panerati, and A. P. Schoellig, “Safe learning in robotics: From learning-based control to safe reinforcement learning,” Annual Review of Control, Robotics, and Autonomous Systems , vol. 5, no. 1, pp. 411–444, 2022. [18] J. Wu, C. Huang, H. Huang, C. Lv, Y. Wang, and F.-Y. Wang, “Recent advances in reinforcement learning-based autonomous driving behav-ior planning: A survey,” Transportation Research Part C: Emerging Technologies , vol. 164, p. 104654, 2024. [19] J. Seo, J. Lee, E. Baek, R. Horowitz, and J. Choi, “Safety-critical control with nonaffine control inputs via a relaxed control barrier function for an autonomous vehicle,” IEEE Robotics and Automation Letters , vol. 7, no. 2, pp. 1944–1951, 2022. [20] W. Xiao, C. G. Cassandras, and C. Belta, Safe autonomy with control barrier functions: Theory and applications . Springer, 2023. [21] A. D. Ames, S. Coogan, M. Egerstedt, G. Notomista, K. Sreenath, and P. Tabuada, “Control barrier functions: Theory and applications,” in 18th European control conference , pp. 3420–3431, 2019. [22] Y. Zhang, T. Jiang, Z. Cai, and Y. Ji, “Safety-critical control under timed reach-avoid specifications: A backup control barrier function approach,” IEEE Control Sys. Letters , vol. 10, pp. 109 – 114, 2026. [23] R. Reiter, J. Hoffmann, D. Reinhardt, F. Messerer, K. Baumg¨ artner, S. Sawant, J. Boedecker, M. Diehl, and S. Gros, “Synthesis of model predictive control and reinforcement learning: Survey and classifica-tion,” Annual Reviews in Control , vol. 61, p. 101045, 2026. [24] H. Zhou, H. Liu, H. Lu, J. Ma, and Y. Ji, “Enhance planning with physics-informed safety controller for end-to-end autonomous driving,” in IEEE Intl. Conf. on Rob. and Bio. , pp. 1775–1782, 2024. [25] C. F. O. da Silva, A. Dabiri, and B. De Schutter, “Integrating reinforcement learning and model predictive control for mixed-logical dynamical systems,” IEEE Open Journal of Control Systems , vol. 4, pp. 316–331, 2025. [26] J. Lubars, H. Gupta, S. Chinchali, L. Li, A. Raja, R. Srikant, and X. Wu, “Combining reinforcement learning with model predictive control for on-ramp merging,” in IEEE International Intelligent Trans-portation Systems Conference , pp. 942–947, 2021. [27] X. Bu, “Prescribed performance control approaches, applications and challenges: A comprehensive survey,” Asian Journal of Control ,vol. 25, no. 1, pp. 241–261, 2023. [28] A. Agrawal and K. Sreenath, “Discrete control barrier functions for safety-critical control of discrete systems with application to bipedal robot navigation,” in Robotics: Sci. and Sys. , vol. 13, pp. 1–10, 2017. [29] X. Bu and Z. Liu, “Discrete-time prescribed performance control of an air-vehicle’s seeker stabilized platform,” IEEE J. Miniaturization Air Space Syst. , vol. 4, no. 3, pp. 267–273, 2023. [30] D. Liu and G.-H. Yang, “Prescribed performance model-free adaptive integral sliding mode control for discrete-time nonlinear systems,” 
+
+IEEE Transactions on Neural Networks and Learning Systems , vol. 30, no. 7, pp. 2222–2230, 2018. [31] Q. Li, Z. Peng, L. Feng, Q. Zhang, Z. Xue, and B. Zhou, “Metadrive: Composing diverse driving scenarios for generalizable reinforcement learning,” IEEE transactions on pattern analysis and machine intelli-gence , vol. 45, no. 3, pp. 3461–3475, 2022. [32] M. Aledhari, M. Rahouti, J. Qadir, B. Qolomany, M. Guizani, and A. Al-Fuqaha, “Motion comfort optimization for autonomous vehicles: Concepts, methods, and techniques,” IEEE Internet of Things Journal ,vol. 11, no. 1, pp. 378–402, 2023.

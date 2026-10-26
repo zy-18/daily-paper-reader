@@ -1,0 +1,1374 @@
+Title: Confessions of a Masked MDP
+
+URL Source: https://arxiv.org/pdf/2610.28360v1
+
+Published Time: Wed, 21 Oct 2026 01:38:44 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# Confessions of a Masked MDP 
+
+Sebastian Reboul Lorenzo Croissant H´ el` ene Halconruy 
+
+SAMOVAR, T´ el´ ecom SudParis, Institut Polytechnique de Paris Wiremind Cargo AI & ML Group Department of Engineering Universitat Pompeu Fabra SAMOVAR, T´ el´ ecom SudParis, Institut Polytechnique de Paris Modal’X, Universit´ e Paris-Nanterre 
+
+# Abstract 
+
+In reinforcement learning, one presumes the action set to be known ahead of time, and, thus, one must know if any state-action pairs are not permissible ahead of computations. In some applications, determining this ac-tion mask is the main computational bot-tleneck. Isolating this problem to highlight its core properties, we study how to com-bine the search for an optimal policy with the learning of the mask itself, under a lin-ear MDP model in which each attempted ac-tion reveals the exact value of a linear score determining its validity. In this framework, we first construct an algorithm based on de-terministic optimistic optimization and show that it is minimax optimal, which we show is also computationally efficient. However, it is sub-optimal on non-degenerate instances, as we show. We propose an alternative, which is also computationally efficient, which plans its exploration strategy. This algorithm ad-mits a formal interpretation as an analogue of information-directed-sampling for determin-istic feedback, which may be of independent interest. Finally, we study an application of this framework to transfer learning, where the invalid action set changes over time. 
+
+# 1 INTRODUCTION 
+
+Reinforcement learning, the interactive learning of control systems and games (Tesauro, 1995; Sutton and Barto, 2018), and in particular its formalisation us-ing Markov Decision Processes (MDPs) (Puterman, 1994), has been an undeniably successful field of re-search in the last thirty years. Applications span far and wide, from datacenter cooling (Gao et al., 2014), to autonomous driving (Shalev-Shwartz et al., 2016), through advertising (Cai et al., 2017) and conversa-tional AI training (Li et al., 2016). In the MDP formalisation, the set of available actions is typically assumed to be independent of the state of the system. In the classical theory (Bellman, 1957), this assumption is a convenience and varying actions can be accommodated at the cost of some burdensome notation (see, e.g. , Puterman, 1994, Ch. 6). In computation, however, ever since RL methods have shifted to GPU-accelerated computation (Mnih et al., 2015), varying actions have become nefarious spoilers. Indeed, GPU-acceleration of, e.g. , Value Iteration, re-lies on the ability to broadcast operations over the en-tire state-action space. The solution, early adopted by practitioners, is to use a boolean invalid action mask to zero-out the rewards (and/or transitions) cor-responding to invalid actions. Hadamard multiplica-tion by the mask preserves the tensor structure, and is accelerated. Remarkably, there has been some theoret-ical work showing that masking preserves the conver-gence of Policy Gradient (Huang and Ontanon, 2020). This state of affairs is acceptable in many applications. However, in some cases, computing the mask is itself the computational bottleneck. For instance, in civil engineering applications, each action corresponds to a refinement of the current design (state), and determin-ing whether it satisfies the project’s design constraints may require extensive simulations. Precomputing all possible designs in order to check their feasibility for a building is, quite evidently, a prohibitively expensive approach to architecture. When pre-computation of the mask is impossible, the current approach is to penalise invalid actions through reward shaping Ng et al. (1999), which is a form of Lagrangian relaxation. However, when it comes to learning, this approach is fundamentally flawed: it treats the deterministic signal of permissibility and the stochastic reward signal homogeneously, a dilu-tion which explains the terrible performance of these as learning methods. One would expect the literature on constrained MDPs to have addressed this problem somehow. Yet, both arXiv:2610.28360v1 [stat.ML] 20 Oct 2026 classical (Altman, 1999) and more recent (Achiam et al., 2017; Amani et al., 2021) work focuses on ex-pected costs, with the aim of controlling violations. In our setting, due to determinism of signals, there is no reason to repeat a known violation. The closest work to ours is, thus, that of Wei et al. (2023), whose in-stantaneous hard constraints are in the same spirit, but whose regret bounds are dominated by the min-imax analysis and stochasticity of the rewards in the interior of the constraints, which prevents the identifi-cation of optimal exploration strategies. At the end of the day, we are left to face an MDP with masked actions, a masked MDP, if you will, with the problem of how to efficiently explore it to identify the mask. Motivated by the computational cost of the mask itself, we focus on 0-noise feedback, analogous to membership-query and realizable-classification set-tings (Angluin, 1988; Littlestone, 1988). We will show, with Theorem 2.3, that this is sufficient to achieve op-timal regret if one must also learn the MDP dynamics and/or rewards. While the mask confesses its values freely, the problem of reaching the information effi-ciently through the MDP dynamics remains. In the remainder of this section, we detail the set-ting explicitly, and formally introduce the problem of mask learning. Thereafter, in Section 2, we establish a minimax-optimal algorithm based on Optimism in the Face of Uncertainty (OFU), and argue that this is not a good benchmark for this problem. In Section 3, we thus study finer, instance-dependent bounds, and in-troduce an algorithm which improves the exploration of OFU on non-degenerate instances, and connect it to the information-directed sampling (IDS) algorithm of Russo and Van Roy (2014), also identifying an aux-iliary MDP formulation, `a la Hao and Lattimore (2022). Finally, in Section 4, we discuss an example application to transfer learning of masks in MDPs, mo-tivated by an industrial application. 
+
+1.1 Setting 
+
+As a basis, let M := ( S, A, P, r, H ) be a finite-horizon MDP, with state space S, action space A, transition kernel P : S × A × S → [0 , 1], with P 
+
+> s′∈S
+
+P (s, a, s ′) = 1, reward r : S × A → [0 , 1], and horizon H ∈ N.We will adopt the formalism of linear MDPs (without loss of generality as it subsumes tabular MDPs). Thus, we assume that there exists a known feature map ϕ :
+
+S × A → Rd, d ∈ N, such that, for all ( s, a ) ∈ S × A ,
+
+r(s, a ) = ϕ(s, a )⊤θr
+
+for some parameter θr ∈ Rd. Moreover, we assume that the transition kernel is linear in the features, i.e. 
+
+there is parameter-valued function θP : S → Rd over 
+
+S such that 
+
+P (s, a, s ′) = ϕ(s, a )⊤θP (s′)for all ( s, a, s ′) ∈ S × A × S .From M, we can define a family of masked MDPs, indexed by the masks m ∈ 2S×A , viewed either as function from S ×A → { 0, 1} or a {0, 1}-valued matrix in RS×A . The masked MDP Mm := ( S, A, P, r, H, m )is defined on the augmented state space S ∪{ s†}, where 
+
+s† denotes an absorbing cemetery state. Its reward function is given for ( s, a ) ∈ S × A by 
+
+rm(s, a ) = m(s, a )r(s, a ),
+
+with rm(s†) := 0. For ( s, a, s ′) ∈ S × A × S , the transition kernel of Mm is defined by 
+
+Pm(s, a, s ′) = m(s, a )P (s, a, s ′),
+
+with the remaining probability mass assigned to the cemetery state: 
+
+Pm(s, a, s †) := 1 − X
+
+> s′∈S
+
+m(s, a )P (s, a, s ′).
+
+Finally, since s† is absorbing, Pm(s†, ·, s †) = 1. Note that a masked linear MDP remains a linear MDP, up to increasing the dimensions by 1. Indeed the new feature map eϕ : S ∪ { s†} × A → Rd+1 is defined as 
+
+eϕ(s, a ) =  m(s, a )ϕ(s, a ), 1 − m(s, a ) ∈ Rd+1 . Thus, in order to ease exposition and maintain consistent algebraic tools, we will also represent the mask linearly using the embedding ϕ, i.e. we assume that there is 
+
+u⋆ ∈ Rd such that 
+
+m(s, a ) = sgn( ϕ(s, a )⊤u⋆) for all ( s, a ) ∈ S × A .
+
+When clear from context, we drop subscripts of m.In a (masked) MDP, given any h ∈ [H] and π :[H] × S → A , let ( St,s,π h )Hh=t be the Markov chain induced by π ∈ ΠM (Markov policies) and P start-ing from St,s,π t = s. It is well known that there is a cumulated-reward-maximising policy of this form, and we can solve the control problem by limiting ourselves to maximising, over π ∈ ΠM , the value functions Jπ
+
+defined for ( t, s ) ∈ [H] × S by 
+
+Jπ (t, s ) := E
+
+" HX
+
+> h=t
+
+r St,s,π h , π h(St,s,π h )#
+
+.
+
+Moreover, we will denote the value function 
+
+V : ( t, s ) ∈ [H] × S 7 → V (t, s ) := sup 
+
+> π
+
+Jπ (t, s ),
+
+where the supremum is taken over all Markov time-dependent policies π. When necessary to clarify a mask on the MDP, we will add superscripts to J, V ,or S to indicate the mask, e.g. Jm, V m, and Sm,π .When considering an initial distribution ϱ over states, we will use the shorthand V (h, ϱ ) := R V (h, s )ϱ(d s)and likewise for J.
+
+# 2 MINIMAX MASK LEARNING 
+
+On the masked MDP, we can consider three main learning problems: the mask, the dynamics, and the combination of both. In this section, we draw a gen-eral picture of the mask learning problem with broad strokes, focusing on minimax-optimality. 
+
+2.1 Learning problems on masked MDPs 
+
+Clearly, if the mask is known but the dynamics must be learnt, the problem is statistically indistinguishable from a classical RL problem (Jin et al., 2020). By com-parison, we will focus on the other two problems where the mask is unknown, due to the absence of its pre-computation, and an agent observes only sequences of state-action-reward-mask quadruples. Meanwhile, the learning problem of the dynamics is naturally for-mulated as an episodic online RL problem (Jin et al., 2020), wherein visiting a state-action pair ( s, a ) reveals a noisy signal of the reward and a sampled transition from P (s, a, ·). Notice that, due to the presence of a cemetery state, one must consider an episodic setting, rather than a non-episodic one. Let u⋆ denote the unknown true parameter of the mask’s linear form. Letting A be a learning algo-rithm which produces a sequence of action trajectories 
+
+{(Ak,h )Hh=1 }k∈N by playing policies ( πk)k∈N, we mea-sure its performance by its cumulative pseudo-regret ,which, after K ∈ N episodes, is defined as 
+
+RK (A) := 
+
+> K
+
+X
+
+> k=1
+
+sup 
+
+> π
+
+Jπ (1 , ϱ ) − Jπk (1 , ϱ ).
+
+We continue, in Section 2.2, by the construction of a minimax-optimal optimistic algorithm. Then, in Sec-tion 2.3, we show that any such algorithm is a sufficient building block for learning transitions and rewards if necessary. This will complete the picture of these three learning problems. 
+
+2.2 Minimax Regret bounds 
+
+Naturally, one would begin a study of learning masks in a masked MDP by studying minimax-optimal re-gret. However, as Theorem 2.1 will show, this paradigm is a poor benchmark for understanding the moving pieces of the problem. Indeed, due to the lin-ear embedding, the number of mistakes that can be made by any reasonable 1 algorithm is determined by the feature map in a tight manner. In order to keep track of available information about the mask, we will use a version space (as in, e.g. ,Angluin, 1988) which contains all system hypothe-ses consistent with observed values of the mask. Let 
+
+D ⊂ S × A be a collection of state-action pairs ( si, a i), 
+
+i ∈ [n], and define y ∈ Rn by yi := ⟨ϕ(si, a i)|u⋆⟩. The version space compatible with D is 
+
+V(D) = C0 ∩ u ∈ Rd : Φ D u = y}
+
+wherein Φ D = ( ϕ(si, a i)⊤)ni=1 , and C0 ⊂ Rd is an a priori feasible set, say the unit ball. More broadly, we call V ⊂ Rd a version space if there is a set D ⊂ S × A 
+
+such that V = V(D). Whenever the learner plays ( s, a ) ∈ S × A , it observes the exact score yi = ϕ(s, a )⊤u⋆, (whether the action is valid or not), and thus m(s, a ), as well as the re-ward and next state of Mm (the next state being s†
+
+if the action is invalid). This noiseless feedback model is an extension of the deterministic bandit problems (Munos, 2011). Given a version space V, the linear structure of the mask partitions the state-action space into three sets: the certified valid pairs, 
+
+D+(V) := (s, a ) ∈ S × A : inf  
+
+> u∈V
+
+ϕ(s, a )⊤u > 0 ,
+
+the certified invalid pairs, 
+
+D−(V) := (s, a ) ∈ S × A : sup 
+
+> u∈V
+
+ϕ(s, a )⊤u < 0 ,
+
+and the remaining uncertified pairs, 
+
+U (V) := ( S × A ) \  D+(V) ∪ D −(V).
+
+In other words, a pair ( s, a ) is uncertified whenever the range of θ ∈ V 7 → ⟨ ϕ(s, a ), θ ⟩ includes zero. As the learner plays, it generates a non-decreasing se-quence of sets ( Dt)t≥1 by interacting with the environ-ment, whose parameter u⋆ lies in the intersection of the non-increasing sequence ( Vt)t≥1, where Vt := V(Dt). Given D, V(D) is defined by linear equalities (up to intersection with C0), so that sampling a new pair ( s, a )cannot affect the version space unless ϕ(s, a ) is linearly independent of D. This implies that the number of mistakes made by a reasonable algorithm (that never plays in D−(Vt)) is at most dim ϕ(U (V0)) ≤ d ≤ |S| |A| . 
+
+> 1Understood to mean an algorithm which never takes any action it could have known was masked. V
+> u1
+> u2
+> D+
+> D−
+> ϕz1
+> ϕz2
+> ϕz3
+> ϕz4
+> ϕz5
+> ϕz6
+> ϕz7
+> U(V)
+
+Figure 1: Visualisation of V and ( D+, D−, U ). This quantity will be the central focus of our explo-ration analysis, however, it should be noted features linearly dependent on ϕ(Vt) can still identify the va-lidity of other pairs (for instance ϕz4 and ϕz5 in Sec-tion 2.2), which we will use to improve exploration. 
+
+Theorem 2.1. Let C0 = B2(0 , 1) be the Euclidean ball. For every d ≥ 2 and every H ≥ 1, there is a masked MDP with dim ϕ(U (C0)) = d on which any algorithm satisfies 
+
+sup 
+
+> u⋆∈C 0
+
+Eu⋆
+
+R(T ) ≥ H
+
+4 min {T, d − 1}.
+
+Proof. Consider the masked MDP in Figure 2. We take the trivial feature map, so that d = 2 |A| . Under the best possible mask, all actions in s1 go to s2 with reward 1. Under the real mask, only one of the actions is valid in s1. Any algorithm has no choice but to take actions at random in s1 until s2 is reached, which incurs regret H each time. The bound follows from expected number of trials, see Appendix B.4. s1
+
+s2
+
+s†
+
+> +1 +1 0
+
+Figure 2: The MDP in the proof of Theorem 2.1. In an unmasked MDP, optimistic algorithms offer a simple-to-analyse class of minimax-optimal algorithms (Auer and Ortner, 2006; Jaksch et al., 2010; Azar et al., 2017). We now introduce their analogue in the masked setting, which we call version-space optimism (VSO). Since the mask is observed noiselessly, VSO is more closely related to the work of Munos (2011) than to these standard RL algorithms. It maintains all mask models still compatible with the observations and acts according to the most optimistic one, thereby exploit-ing only constraints that have already been ruled out by the data. Note that this algorithm is computa-tionally feasible, since the space of masks to search is at most d-dimensional and the MDPs are linear. It is also possible to implement it using Extended Value Iteration (Jaksch et al., 2010), see Appendix D. 
+
+Algorithm 1 Version-space optimism (VSO)  
+
+> 1:
+
+Input: initial version space V1 := C0, initial law 
+
+ϱ. 
+
+> 2:
+
+for t = 1 , 2, . . . do  
+
+> 3:
+
+Set πt ∈ argmax π∈ΠM max m∈V t Jmπ (1 , ϱ ).  
+
+> 4:
+
+Play πt for the episode, collect ( Zh)h∈[H] := (Sπt 
+
+> h
+
+, π t,h (Sπt 
+
+> h
+
+)) Hh=1 . 
+
+> 5:
+
+Dt ← D t−1 ∪ { (Zh)Hh=1 }, and Vt+1 ← V (Dt).  
+
+> 6:
+
+end for Proposition 2.2. Let C0 = B2(0 , 1) be the Euclidean ball. For any (H, T, ϕ ), the version-space optimism algorithm (Algorithm 1) satisfies 
+
+sup 
+
+> u⋆∈C 0
+
+Eu⋆
+
+R(T ) ≤ min {T, dim ϕ(U (C0)) } H. 
+
+Proof. By optimism over the version space, either episodes are free ( πt coincides with the optimal policy of the true mask) or they land on an element of U (Vt), which resolves a direction of U (C0). Since there are at most dim ϕ(U (C0)) directions to resolve, the claim follows. Theorem 2.1 and Proposition 2.2 together show that the minimax regret rate for the problem is no different from the rate one would get if one could query each state-action pair directly. In this sense, it is of very limited interest, and the heart of the problem lies in understanding how to leverage the dynamics of the MDP to query the version space at minimal regret. 
+
+2.3 Separation theorem 
+
+Theorem 2.3 will now argue that mask learning can be separated from the problem of learning the dynamics and rewards of the underlying linear MDP, which mo-tivates our choice to study the mask learning problem in isolation. Suppose we have an optimistic learning algorithm A for linear MDPs that is capable of achiev-ing, over T episodes, a high-probability regret bound of 
+
+Blin (T, H, δ ) on an MDP with horizon H. We denote the trajectory of A in episode t by ( SA ,t h , A A ,t h )Hh=1 
+
+and denote by ( BA ,t h )Hh=1 corresponding step regret upper bounds (see, e.g. , Azar et al., 2017). 
+
+Theorem 2.3. Consider a reasonable algorithm that is jointly optimistic in the mask and the linear MDP. Let pt be the probability, conditional on the informa-tion available before episode t, that an action is at-tempted that is invalid under the true mask. If the analysis of A holds under the joint interaction 2, with 
+
+P
+
+> T
+
+X
+
+> t=1
+
+βt ≤ Blin (T, H, δ/ 2) 
+
+!
+
+≥ 1 − δ/ 2.
+
+Then 
+
+R(T ) ≤ Blin (T, H, δ/ 2) + H min {T, r 0} +
+
+r T
+
+2 log 2
+
+δ
+
+!
+
+with probability at least 1 − δ, wherein r0 := dim ϕ(U (C0)) . A high-probability bonus bound for the learner on an unmasked MDP alone does not imply the joint-interaction assumption above. 
+
+We defer the proof to Appendix B.5. Let us sketch it briefly. On episodes with no exploration we use the existing bounds of A , trajectorially. On exploratory episodes, we use the usual regret decomposition ∆t ≤ βt + Hp t, βt := E
+
+" X
+
+> h<τ t∨H
+
+BA ,t h Ft
+
+#
+
+,
+
+where ∆ t is episode t’s conditional pseudo-regret and 
+
+τt is its first invalid-action time. We bound the resulting accumulation of exploration using a martingale argument between samples and pt,then show decrease of the dimensionality potential ΨC0 (V) := dim ϕ U (C0) − dim  ϕ U (C0) ∩ U +(V) ,
+
+where U +(V) := {x ∈ Rd : ∀(u1, u 2) ∈ V 2, u ⊤ 
+
+> 1
+
+x =
+
+u⊤ 
+
+> 2
+
+x} is the subspace whose value is known on V.As a consequence of Theorems 2.1 and 2.3, it would ap-pear that the problem is trivially solved. Instead, it is more accurate to observe that minimax analysis is not the correct lens to analyse the problem, which, indeed, is not statistical. Rather, the core of the problem, and the next section, lies in how to adapt exploration to the interaction of the dynamics with the feature-space of each instance. 
+
+# 3 PLANNED EXPLORATION 
+
+To understand the shortcomings of VSO on non-pathological instances, let us introduce one which is intuitively cheap to explore, but where optimistic algo-rithms fail. This instance (see Figure 3) is an extension of Figure 2. Of the |A| actions, only one, say a⋆ leads 
+
+> 2E.g. , discarding this data and adapting regret time.
+
+to s2, as before. But now, instead of all other actions being invalid (masked), some proportion δ ∈ (0 , 1) of them leads (with 0 reward) to a chain 3 (s′
+
+> i
+
+)Hi=2 of states which transition to each other with reward 1. In the final state of the chain, s′ 
+
+> H
+
+, a⋆ yields reward 1, and all other actions 0, and we take any feature map satisfying 
+
+ϕ(s1, a i) = ϕ(s′ 
+
+> H
+
+, v i),
+
+for all i ∈ [d], d = O(|A| ). Thus, the rewards obtain-able are: 0, if the first action is invalid, H − 2 if one takes a̸ = a⋆ at the end of the chain, H − 1 if one takes 
+
+a⋆ instead, and finally H if one takes a⋆ from the start. On this instance, any algorithm must still begin by sampling doors at random. However, VSO believes that all untried actions lead to s2 directly, so they have value H while the chain always has value H−1 at most. Thus, VSO never takes the chain, incurring a regret of order O(H(d−1)(1 −δ)/2) as before. Since a chain can be found (on average) in O((1 − δ)H) tries, and then any further exploration costs at most O(δK ), hence it is possible to move from a multiplicative dependence in ( H, d ) to an additive one. s1 
+
+> s2
+> s†
+> +1 +1 0
+> s′
+> 2s′
+> H
+> chain
+> +1 0
+> s†
+> 0
+
+Figure 3: The second example MDP. This type of exploration problem is fundamental in control problems, and has been documented in the literature of MDPs (see, for instance, the forthcom-ing work of Boone et al., 2026). In order to ad-dress it, we introduce a planning-based algorithm which can be readily interpreted as an analogue of the information-directed sampling (IDS) algorithm of Russo and Van Roy (2014, see also Hao and Lattimore, 2022). Let us first introduce the algorithm, and then we will compare it to both VSO and IDS. In order to determine which are the best exploratory paths through the masked MDP, let us start by spec-ifying a generic version space V, and consider a set of target state-action pairs U (V) ⊆ T . Given any (non-stationary, randomised) policy π, let τπ be the 
+
+> 3Figure 3 shows only one such action, for legibility.
+
+first time that the trajectory ( Sπh , π h(Sπh )) Hh=1 gener-ated by π reaches a state-action pair in T .Consider the family of auxiliary MDPs ( Mλ)λ≥0 with the same dynamics and rewards as the original MDP, except that actions are limited to T ∪ D +(V) except that episodes terminate early if T is reached, yielding a fixed reward of λ. The value functional of this MDP is readily seen to be 
+
+Jλ, T 
+
+> V,·
+
+: ( π, t, s ) 7 → E
+
+ (τπ −1) ∧H
+
+X
+
+> h=t
+
+r(Sπh , π h(Sπh )) + λ1{τπ ≤ H} | Sπt = s
+
+
+
+. (1) Via this auxiliary MDP, it is straightforward to obtain a dynamic programming representation of Jλ, T 
+
+> V,·
+
+, or, in fact, of the associated value function V λ, T 
+
+> V
+
+(h, s ) := sup π Jλ, T 
+
+> V,π
+
+(h, s ), which is given by Proposition 3.1. 
+
+Proposition 3.1. The optimal value functions V λ, T
+
+> V
+
+satisfy the following family, indexed by λ ≥ 0 and 
+
+U (V) ⊆ T , of dynamic programming equations 
+
+V λ, T 
+
+> V
+
+(h, s ) = λ1{∃ a: ( s,a )∈T } ∨ max 
+
+> a∈D +(Vt)
+
+
+
+r(s, a )+
+
+Z
+
+V λ, T 
+
+> V
+
+(h + 1 , s ′)P (d s′|s, a )
+
+
+
+(2) 
+
+with terminal conditions V λ, T 
+
+> V
+
+(H + 1 , ·) ≡ 0. More-over, a pointwise maximiser of the right-hand side of 
+
+(2) (understood as taking a ∈ T if the λ-term is domi-nant) is an optimal policy for the auxiliary MDP Mλ.
+
+The dynamic programming (Bellman) equation (2) might appear highly irregular, and it is indeed un-common in reinforcement learning. It is the standard form for a mixed control and stopping (a.k.a. free-boundary) problem, a well-studied class of stochastic control problems in the mathematical finance litera-ture see, e.g. , Pham (2009). Compare also pure stop-ping problems with a dynamic programming equation, such as prophet problems (Hill and Kertz, 1992). In any case, for finite-dimensional MDPs, resolution of this equation is numerically straightforward, and we can thus use this solution to compute an optimal policy which explores through the shaped reward of (1), which targets at each step Tt := U (Vt). 4
+
+Regret analysis of Algorithm 2, see Proposition 3.2, bounds the regret of λ-planning in terms of the clearing price for a version space V and a target T , that is ˚λV (T ) := min 
+
+
+
+λ ≥ 0 : V λ, T 
+
+> V
+
+(1 , ϱ ) ≥ max  
+
+> m∈V
+
+V m(1 , ϱ )
+
+
+
+> 4In the appendix, we generalise to bigger sets.
+
+Algorithm 2 λ-planning  
+
+> 1:
+
+Input: initial version space V1 := C0, initial law 
+
+ϱ. 
+
+> 2:
+
+for t = 1 , 2, . . . do  
+
+> 3:
+
+˚λt = ˚λVt (U (Vt))  
+
+> 4:
+
+Compute πt ∈ argmax π J˚λt,U (Vt) 
+
+> Vt,π
+
+(ϱ).  
+
+> 5:
+
+Play πt for the episode, collect ( Zh)h∈[H] := (Sπt 
+
+> h
+
+, π t,h (Sπt 
+
+> h
+
+)) Hh=1 . 
+
+> 6:
+
+Update Dt ← D t−1 ∪ { (Zh)Hh=1 }, and Vt+1 ←V(Dt).  
+
+> 7:
+
+end for 
+
+(recall that ϱ is the initial state distribution). 
+
+Proposition 3.2. For any u ∈ C 0, and any T ≥ 1,the λ-planning algorithm (Algorithm 2) satisfies 
+
+Eu
+
+R(T ) ≤ Eu
+
+" TX
+
+> t=1
+
+˚λt(Ψ t − Ψt+1 )
+
+#
+
+wherein Ψt := Ψ C0 (Vt).
+
+We defer the proof to Section B.3 for brevity. The high-level argument mirrors the proof of Proposi-tion 2.2, and no regret except that we can keep track of the regret of exploration episodes through ˚λ rather than upper-bounding by H e.g. when ˚λ = 0 we have 
+
+V 0,T 
+
+> V
+
+(1 , ϱ ) = sup m∈V V m(1 , ϱ ) despite exploration. Now, let us turn to the interpretation of Algorithm 2 as a form of Information-Directed Sampling (IDS). Let us recall the initial set-up of IDS in stochastic ban-dits and reinforcement learning. Given a filtration Ft
+
+of information available before episode t, and an un-known parameter u with a given prior, IDS rests on the computation of the mutual information between the history of observations in episodes up to t, Ht,and a target unknown variable χ (for us, u⋆). Ac-counting explicitly for the policy π that generates the observations, we define 
+
+Iπt (χ, H):=D KL (Pπt (( χ, H)∈· )∥Pπt (χ∈· ) ⊗ Pπt (H∈· )) .
+
+Here, Pπt denotes the probability measure induced by policy π and initial distribution ϱ, conditional on the observed history Ht−1. The random variable H is any history-valued variable whose restriction up to episode 
+
+t − 1 coincides with the observed history. IDS plays the policy 
+
+πt ∈ argmin 
+
+> π
+
+E[( V u∗
+
+(1 , ϱ ) − Ju⋆ 
+
+> π
+
+(1 , ϱ )) 2|H t−1]
+
+Iπt (u⋆, H)which minimises a (quasi-)regret-to-information ratio. In MDPs, Hao and Lattimore (2022) introduced an alternate formulation, where the policy is chosen ac-cording to the penalised objective 
+
+πt ∈ argmax 
+
+> π
+
+E[Ju∗ 
+
+> π
+
+(1 , ϱ )|H t−1] + λIπt (u⋆, H), (3) which can be recast as an auxiliary MDP with a suit-ably shaped reward; see Proposition 4.8 therein. In this formulation, the structural correspondence be-tween (3) and (1) is immediately apparent. In our case, due to the absence of noise in the dynamics (un-certainty is only in the mask), information theory tools and Bayesian methods wither away and leave behind the likelihood of hitting a masked parameter, for which the best proxy is the entry probability into T . With this interpretation in mind, we can rewrite ˚λV (T ) in terms of a ratio, using Lemma 3.3. 
+
+Lemma 3.3. For any V ⊆ C 0 and U (V) ⊆ T such as V 0,T 
+
+> V
+
+(1 , ϱ ) < sup m∈V V m(1 , ϱ ) the clearing price satisfies 
+
+˚λV (T ) = inf 
+
+> π
+
+sup 
+
+> m∈V
+
+V m(1 , ϱ ) − E
+
+τπ −1P
+
+> h=1
+
+r(Sπh , π h(Sπh )) 
+
+
+
+PV (τπ < H ) .
+
+(4) Let us briefly show that the ratio introduced in Lemma 3.3 serves as a computable proxy for the “regret-to-information” ratio underlying IDS. The nu-merator in (4) is an upper bound on the regret of π,since 
+
+V u⋆
+
+(1 , ϱ ) ≤ sup 
+
+> m∈V
+
+V m(1 , ϱ )and 
+
+E
+
+" τπX
+
+> h=1
+
+r(Sπh , π h(Sπh )) 
+
+#
+
+≤ E
+
+" HX
+
+> h=1
+
+r(Sπh , π h(Sπh )) 
+
+#
+
+,
+
+which can be computed under Vt. Similarly, the de-nominator is a computable lower bound on the ex-pected number of resolved dimensions, since τπ ≤ H
+
+and, a.s., 1{τπ ≤ H} ≤ ΨC0 (Vt) − ΨC0 (Vt+1 ). This quantity is used at analysis time in Proposition 3.2. 
+
+# 4 APPLICATION TO TRANSFER LEARNING 
+
+In RL, beyond single tasks, the literature has increas-ingly aimed to improve computational efficiency by learning multiple instances at once or sequentially. The former has generally been studied in zero-shot 
+
+RL Touati et al. (2022), while the latter falls under 
+
+transfer learning . Given a learnt source and unlearnt target task, transfer aims to leverage shared struc-tures to improve learning, see Pan and Yang (2009) for a broad survey. In RL, the common method is to pre-train representations of environments on large datasets, and then fine-tune them on small-data tar-get tasks (Yosinski et al., 2014). There have been a number of proposed representations: learnt policies (Fern´ andez and Veloso, 2006), value functions (Tay-lor and Stone, 2007), latent state features (Parisotto et al., 2015), successor features (Barreto et al., 2017, 2018), samples (Lazaric et al., 2008), or models of the environment (Sun et al., 2021). In all cases, the diffi-culty lies not only in transferring the correct informa-tion, but also in how to spread learning cost between source and target. Applied to masked MDPs, we seek to transfer infor-mation about two masks for the same linear MDP. The medium of transfer we propose is to choose the set C0 of VSO and λ-planning from information ob-tained about a prior mask in three experimental frame-works. Throughout, the base MDP always has 10 states, 5 actions (one of which aborts the MDP in-dependently of the mask), ϱ = δs1 , and horizon 10. The transfer procedure is repeated for 1000 random MDPs and masks, all figures report averaging on these samples. At each random trial, independently for each pair ( s, a ), we draw three coordinates of ϕ(s, a )uniformly, and draw values for them according to a 
+
+Dirichlet (1 , 1, 1) distribution, setting the rest to 0. The function θ : S → Rd is 0 everywhere except at two uniformly drawn states, with respective weights 
+
+w and 1 − w, for w ∼ Unif [0 , 1]. Meanwhile, the re-ward parameter θr is drawn uniformly in [0 , 1] d and the source mask is drawn uniformly at random on the unit disk in the hyperplane orthogonal to the vector of ones. 5 We take this disk as C0 in what follows. Our three experiments differ in the sampling process of the target mask with respect to the source u(1) which is sampled uniformly in C0. All transfer version spaces will be intersected with C0 to bring the parameter back into the hyperplane. Let ⊕ denote the Minkowski sum: 
+
+A ⊕ B = {a + b : a ∈ A, b ∈ B}.
+
+4.1 Single-step transfer 
+
+In our first setting, the source mask u(1) is assumed to be known, and the target mask u(2) to lie within distance ρ of it. We therefore initialize the target al-gorithm from the restricted version space 
+
+Ct0 := C0 ∩ u : ∥u − u(1) ∥2 ≤ ρ .
+
+To assess the benefit of this prior information, we com-pare each algorithm initialized from Ct0 with the same algorithm run on the same target task from the full version space C0.                   
+
+> 5Masks near-orthogonal to this plane allow/forbid nearly all actions, leading to degeneration. Similarly, we re-sample masks with no valid actions. 010 20 30 40 0510 15 20
+> episodes 𝑇
+> E[𝑅  (𝑇  ) ]
+> 210 20 30 40 010 20 30
+> dimension 𝑑
+> E[𝑅  (∞) ]
+> VSO 𝜆 -planning transfer no transfer
+
+Figure 4: Single-step transfer. Left: expected re-gret against the number of episodes, d = 16, ρ =0.13. Right: total regret against d ≤ 40, with ρ =0.5/√d − 1. Solid: started from Ct0; dashed: no trans-fer, started from C0.Without transfer (dashed lines), the two algorithms are close, λ-planning performing slightly better as d
+
+grows. With transfer, both perform much better, and 
+
+λ-planning is ahead of VSO at every dimension but the smallest, showing the (on average) lower regret of λ-planning. Moreover, Figure 5 shows that trans-fer reduces regret and strengthens the advantage of 
+
+λ-planning when the transferred version space is tight (small ρ). This is consistent with λ-planning exploiting certified actions to acquire information at lower regret. As ρ increases, fewer actions are certified initially and this advantage fades. 0.03 0.05 0.1 0.2 0.512510 20     
+
+> radius 𝜌
+> E[𝑅  (∞) ]
+> VSO 𝜆 -planning transfer no transfer
+
+Figure 5: Single-step transfer: total regret against the transfer radius ρ, d = 16, log-log axes. Solid: started from Ct0; dashed: no transfer, started from C0.
+
+4.2 Multiple-step transfer 
+
+Building on the previous setting, we consider a se-quence of K +1 tasks with mask parameters {u(k)}Kk=0 ,sampled from a uniform source u(0) ∈ C 0 then sequen-tially uniformly in the ball B(u(k−1) , ρ ). We repeat the transfer along the chain by taking the version spaces are as follows: Task 1 starts from C0 ∩ B(u(0) , ρ ), and task k + 1 from ( Vk ⊕ B(0 , ρ )) ∩ C 0, where Vk is the version space transferred from task k. This yields a se-quential transfer scheme with a set-valued warm start, in the spirit of procedures that leverage information from a previous optimization problem to facilitate the next one (Ash and Adams, 2020). Each task is thus solved within a region informed by the preceding task, rather than from the full parameter space. 0 10 20 30 40 50 010 20 30 40       
+
+> episodes over the chain
+> E[𝑅 ]
+> 2510 15 20 020 40
+> dimension 𝑑
+> E[𝑅 ]
+> VSO 𝜆 -planning
+
+Figure 6: Multiple-step transfer, K = 5 tasks of 10 episodes. Left: regret accumulated over the chain, 
+
+d = 16; dashed vertical lines mark the task switches. Right: total regret over the K tasks against d.Figure 6 shows that λ-planning retains its edge over time. Its lead per task stacks across tasks, so that the gap accumulates along the chain (left), and it widens with the dimension (right). The compounding aspect of this procedure shows that λ-planning can turn a slight advantage in learning in each transfer task into substantial gains in sequential transfer settings. We present further experiments on partial-learning of transferable information in Appendix C. 
+
+# 5 CONCLUSION 
+
+In this work, we study masked MDPs with unknown action validity and exact linear score feedback. Our separation result gives conditions under which mask-learning costs enter additively when rewards and tran-sitions are also unknown. Version-space optimism achieves minimax-optimal regret, however, minimax optimality can conceal substantial differences in the cost of acquiring information. To exploit these differences, we introduced λ-planning, which plans exploration through an auxiliary plan-ning problem. Its clearing price yields an instance dependent regret bound and connects the method to information-directed sampling for deterministic feed-back. Transfer experiments illustrate how version spaces preserve useful information across changing masks and how planned exploration can produce gains that accumulate across tasks. AI use statement 
+
+In this work, we used generative AI tools for several tasks: review or verification of content, and genera-tion of code or proof drafts from formal arguments. We have not used generative AI tools for theoreti-cal or conceptual development, mathematical claims or proofs (beyond formalisation and edition), while method implementation, translation, dataset cleaning or reformatting, qualitative analysis, and interpreta-tion of results are not applicable to this work. Ad-ditionally, we used generative AI tools for literature discovery, editing text, creating figures and code. All AI-assisted work was checked line by line by the au-thors. We take responsibility for the final content of this work, including text, claims, or artifacts produced with the aid of generative AI. 
+
+Acknowledgements 
+
+The work of H´ el` ene Halconruy was supported by the French National Research Agency (ANR) under grant ANR-24-CE40-3341 (project DECATTLON) and ben-efited from Hi! PARIS and State funding managed by the ANR under the France 2030 program (reference ANR-23-IACL-0005). 
+
+# REFERENCES 
+
+Joshua Achiam, David Held, Aviv Tamar, and Pieter Abbeel. Constrained policy optimization. In Pro-ceedings of the 34th International Conference on Machine Learning , pages 22–32. PMLR, 2017. Eitan Altman. Constrained Markov Decision Pro-cesses . Chapman and Hall/CRC, 1999. Sanae Amani, Christos Thrampoulidis, and Lin Yang. Safe Reinforcement Learning with Linear Function Approximation. In Proceedings of the 38th Interna-tional Conference on Machine Learning , pages 243– 253. PMLR, July 2021. Dana Angluin. Queries and concept learning. Machine Learning , 2(4):319–342, 1988. Jordan Ash and Ryan P Adams. On warm-starting neural network training. Advances in neural infor-mation processing systems , 33:3884–3894, 2020. Peter Auer and Ronald Ortner. Logarithmic online regret bounds for undiscounted reinforcement learn-ing. Advances in neural information processing sys-tems , 19, 2006. Mohammad Gheshlaghi Azar, Ian Osband, and R´ emi Munos. Minimax regret bounds for reinforcement learning. In Doina Precup and Yee Whye Teh, ed-itors, Proceedings of the 34th International Confer-ence on Machine Learning , pages 263–272. PMLR, 06–11 Aug 2017. Andr´ e Barreto, Will Dabney, R´ emi Munos, Jonathan J Hunt, Tom Schaul, Hado Van Hasselt, and David Silver. Successor features for transfer in reinforce-ment learning. Advances in neural information pro-cessing systems , 30, 2017. Andre Barreto, Diana Borsa, John Quan, Tom Schaul, David Silver, Matteo Hessel, Daniel Mankowitz, Augustin Zidek, and Remi Munos. Transfer in deep reinforcement learning using successor features and generalised policy improvement. In Interna-tional conference on machine learning , pages 501– 510. PMLR, 2018. Richard Bellman. Dynamic Programming . Princeton University Press, 1957. Victor Boone, Cyrille Kone, Waris Radji, Odalric-Ambrym Maillard, and Dorian Baudry. Towards instance-dependent regret optimality in episodic MDPs with posterior sampling. In Advances in Neural Information Processing Systems , volume 39, 2026. to appear. Qing Cai et al. Deep reinforcement learning for spon-sored search real-time bidding. In Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining , 2017. Fernando Fern´ andez and Manuela Veloso. Probabilis-tic policy reuse in a reinforcement learning agent. In Proceedings of the fifth international joint confer-ence on Autonomous agents and multiagent systems ,pages 720–727, 2006. Jian-Jia Gao et al. Machine learning applications for data center optimization. Google Technical Report ,2014. Botao Hao and Tor Lattimore. Regret bounds for information-directed reinforcement learning. In Ad-vances in Neural Information Processing Systems ,volume 35, 2022. Theodore P Hill and Robert P Kertz. A survey of prophet inequalities in optimal stopping theory. 
+
+Contemporary Mathematics , 125(1):191, 1992. Shengyi Huang and Santiago Ontanon. A closer look at invalid action masking in policy gradient algorithms. 
+
+arXiv preprint arXiv:2006.14171 , 2020. Thomas Jaksch, Ronald Ortner, and Peter Auer. Near-optimal regret bounds for reinforcement learn-ing. Journal of Machine Learning Research , 11(51): 1563–1600, 2010. Chi Jin, Zhuoran Yang, Zhaoran Wang, and Michael I. Jordan. Provably efficient reinforcement learning with linear function approximation. In Conference on Learning Theory , pages 2137–2143, 2020. Alessandro Lazaric, Marcello Restelli, and Andrea Bonarini. Transfer of samples in batch reinforce-ment learning. In Proceedings of the 25th interna-tional conference on Machine learning , pages 544– 551, 2008. Jiweil Li et al. Deep reinforcement learning for dia-logue generation. arXiv preprint arXiv:1606.01541 ,2016. Nick Littlestone. Learning quickly when irrelevant at-tributes abound: A new linear-threshold algorithm. 
+
+Machine Learning , 2(4):285–318, 1988. Volodymyr Mnih et al. Human-level control through deep reinforcement learning. Nature , 518:529–533, 2015. R´ emi Munos. Optimistic optimization of a determin-istic function without the knowledge of its smooth-ness. Advances in Neural Information Processing Systems , 24, 2011. Andrew Y Ng, Daishi Harada, and Stuart Russell. Pol-icy invariance under reward transformations: The-ory and application to reward shaping. In Proceed-ings of the Sixteenth International Conference on Machine Learning , pages 278–287, 1999. Sinno Jialin Pan and Qiang Yang. A survey on transfer learning. IEEE Transactions on knowledge and data engineering , 22(10):1345–1359, 2009. Emilio Parisotto, Jimmy Lei Ba, and Ruslan Salakhutdinov. Actor-mimic: Deep multitask and transfer reinforcement learning. arXiv preprint arXiv:1511.06342 , 2015. Huyˆ en Pham. Continuous-time Stochastic Control and Optimization with Financial Applications , vol-ume 61 of Stochastic Modelling and Applied Proba-bility . Springer, Berlin, 2009. Martin L. Puterman. Markov Decision Processes: Discrete Stochastic Dynamic Programming . Wiley, 1994. Daniel Russo and Benjamin Van Roy. Learning to optimize via information-directed sampling. In Ad-vances in Neural Information Processing Systems ,volume 27, 2014. Shai Shalev-Shwartz, Shaked Shammah, and Amnon Shashua. Safe, multi-agent, reinforcement learn-ing for autonomous driving. In arXiv preprint arXiv:1610.03295 , 2016. Yuewen Sun, Kun Zhang, and Changyin Sun. Model-based transfer reinforcement learning based on graphical model representations. IEEE Transactions on Neural Networks and Learning Systems , 34(2): 1035–1048, 2021. Richard S. Sutton and Andrew G. Barto. Reinforce-ment Learning: An Introduction . MIT Press, 2 edi-tion, 2018. Matthew E Taylor and Peter Stone. Cross-domain transfer for reinforcement learning. In Proceedings of the 24th international conference on Machine learn-ing , pages 879–886, 2007. Gerald Tesauro. Temporal difference learning and TD-Gammon. Communications of the ACM , 38(3):58– 68, 1995. Ahmed Touati, J´ er´ emy Rapin, and Yann Ollivier. Does zero-shot reinforcement learning exist? arXiv preprint arXiv:2209.14935 , 2022. Honghao Wei, Xin Liu, and Lei Ying. Safe Rein-forcement Learning with Instantaneous Constraints: The Role of Aggressive Exploration, December 2023. arXiv:2312.14470. Jason Yosinski, Jeff Clune, Yoshua Bengio, and Hod Lipson. How transferable are features in deep neural networks? Advances in neural information process-ing systems , 27, 2014. APPENDIX 
+
+The appendix is organised as follows. Section A collects the notation used throughout the paper. Section B first introduces the quantities used to track the information gathered on the mask parameter, then provides the proofs of our results: Section B.1 establishes the dynamic programming representation for the auxiliary MDP problem (Proposition 3.1), Section B.2 derives the clearing-price characterisation (Lemma 3.3), Section B.3 proves the regret bound of λ-planning (Proposition 3.2), Section B.4 proves the lower bound for mask learning (Theorem 2.1), and Section B.5 proves the separation result (Theorem 2.3). Section C experiments with transfer from a partially learnt source task. Finally, Section D presents action optimism, an alternative to version-space optimism, and links it to extended value iteration. 
+
+# A NOTATIONS 
+
+Table 1 lists the notation of the paper, grouped by topic. A subscript t denotes the value of a quantity at episode 
+
+t.
+
+Table 1: Notations used in the paper. 
+
+Symbol Meaning MDP and masks 
+
+M = ( S, A, P, r, H ) finite-horizon MDP 
+
+h ∈ [H], [ n] step; {1, . . . , n }
+
+ϱ, s1 initial law; initial state 
+
+ϕ(s, a ) ∈ Rd, d feature map; dimension 
+
+θr ∈ Rd, θP : S → Rd reward and transition parameters 
+
+m ∈ 2S×A mask 
+
+Mm, rm, Pm masked MDP, reward, transitions 
+
+s† cemetery state 
+
+eϕ masked feature map 
+
+u⋆ (also θm) true mask parameter 
+
+u mask parameter 
+
+Policies, values and regret 
+
+π = ( πh)h∈[H], Π M policy; Markov policies 
+
+Sπh , Zh state at step h; pair played at step hJπ , V value of π; optimal value 
+
+t, k; T , K episode; number of episodes 
+
+RK (A), R(T ) cumulative pseudo-regret 
+
+Eu, Pu expectation, probability under u
+
+Ft information before episode t
+
+Version spaces 
+
+C0 prior set of mask parameters 
+
+B2(0 , 1), B(c, r ) unit ball; ball of centre c, radius r
+
+D, Dt observed pairs ΦD , y features of D; revealed values 
+
+V(D), Vt version space 
+
+z, ϕz pair; its feature 
+
+D+(V), D−(V) certified valid, certified invalid pairs 
+
+U (V) uncertified pairs 
+
+ϕ(A), dim ϕ(U (V)) features of A; dimension of their span 
+
+U +(V) directions known on V
+
+ΨC0 (V), Ψ t potential 
+
+I(V) informative pairs Γt dim ϕ(U (Vt)) 
+
+Algorithms 
+
+T target set 
+
+τπ first time T is reached 
+
+Mλ auxiliary MDP 
+
+Jλ, T 
+
+> V,π
+
+, V λ, T 
+
+> V
+
+value of π; optimal value in Mλ
+
+˚λV (T ), ˚λt clearing price Table 1 (continued) 
+
+Symbol Meaning 
+
+A , Blin (T, H, δ ), BA ,t h linear-MDP learner; its regret bound; step bounds 
+
+Ht, Iπt (χ, H) history; mutual information 
+
+Transfer experiments 
+
+ρ transfer radius 
+
+Ct0 transfer prior 
+
+u(k) , K, Ts chain of masks; number of tasks; episodes per task 
+
+A ⊕ B Minkowski sum 
+
+# B PROOFS 
+
+Let us first introduce the quantities used to track information about the mask parameter. The subspace 
+
+U +(V) :=  θ ∈ Rd : u 7 → θ⊤u is constant on V ,
+
+contains the directions whose scalar values are completely determined by the current version space. The potential ΨC0 (V) := dim ϕ U (C0) − dim  ϕ U (C0) ∩ U +(V) .
+
+counts the remaining unknown directions (when in V) in the span of the initially uncertified (in C0) features, while 
+
+I(V) := z : ϕz ∈ U +(V) + ϕ(U (V)) , ϕ z /∈ U +(V) ⊇ U (V).
+
+identifies exactly the pairs that resolve at least one such direction. This construction allows us to relate visits to 
+
+I(V) to decreases in Ψ C0 (V). These quantities distinguish knowledge of an action’s validity from knowledge of its underlying scalar value: an already certified action may still provide useful scalar information, such as certifying further actions for example if ϕ⊤ 
+
+> z3
+
+u⋆ > ∥ϕz3 − ϕz4 ∥ in Figure 2.2. Throughout, Vt is the knowledge state entering episode t, Ψ t := Ψ C0 (Vt), and u⋆ ∈ C 0 the truth. 
+
+B.1 Proof of Proposition 3.1 
+
+The auxiliary MDP is the planning tool underlying λ-planning. Proposition 3.1 provides the dynamic program-ming representation needed to compute its optimal policy for a fixed exploration reward. 
+
+Proposition 3.1. The optimal value functions V λ, T 
+
+> V
+
+satisfy the following family, indexed by λ ≥ 0 and U (V) ⊆
+
+T , of dynamic programming equations 
+
+V λ, T 
+
+> V
+
+(h, s ) = λ1{∃ a: ( s,a )∈T } ∨ max 
+
+> a∈D +(Vt)
+
+
+
+r(s, a )+
+
+Z
+
+V λ, T 
+
+> V
+
+(h + 1 , s ′)P (d s′|s, a )
+
+
+
+(2) 
+
+with terminal conditions V λ, T 
+
+> V
+
+(H + 1 , ·) ≡ 0. Moreover, a pointwise maximiser of the right-hand side of (2) 
+
+(understood as taking a ∈ T if the λ-term is dominant) is an optimal policy for the auxiliary MDP Mλ.Proof of Proposition 3.1. The following recursion in 
+
+V λ, T 
+
+> V
+
+(h, s ) = λ1{∃ a: ( s,a )∈T } ∨ max 
+
+> a∈D +(Vt)
+
+
+
+r(s, a ) + 
+
+Z
+
+V λ, T 
+
+> V
+
+(h + 1 , s ′)P (d s′|s, a )
+
+
+
+,
+
+is exactly the value-iteration scheme for a finite-horizon MDP with known dynamics, in which each state retains its certified actions, together with their rewards and transitions, with the possibility of absorption into the terminal state with reward λ whenever an action of T is present. A policy of this auxiliary MDP has a stopping time τπ at which it takes its first action absorbing action, with 
+
+τπ = ∞ if no contact is made. Its expected cumulative reward is the reward collected before τπ , plus λ on the event τ ≤ H, namely 
+
+Jλ, T 
+
+> V,·
+
+(π, t, s ) = E
+
+ (τπ −1) ∧H
+
+X
+
+> h=t
+
+r(Sπh , π h(Sπh )) + λ1{τπ ≤ H} | Sπt = s
+
+
+
+.
+
+B.2 Proof of Lemma 3.3 
+
+Here we prove the view of the clearing price that is the basis for the comparison with information-directed sampling. 
+
+Lemma 3.3. For any V ⊆ C 0 and U (V) ⊆ T such as V 0,T 
+
+> V
+
+(1 , ϱ ) < sup m∈V V m(1 , ϱ ) the clearing price satisfies 
+
+˚λV (T ) = inf 
+
+> π
+
+sup 
+
+> m∈V
+
+V m(1 , ϱ ) − E
+
+τπ −1P
+
+> h=1
+
+r(Sπh , π h(Sπh )) 
+
+
+
+PV (τπ < H ) . (4) 
+
+Proof of Lemma 3.3. Let T be a set state-action pairs containing U (V), denote the function f : λ 7 → V λ, T 
+
+> V
+
+(1 , ϱ ). For a policy π, note its stopping time be τπ at which it takes its first action in T . Noting 
+
+L = inf 
+
+> π
+
+sup m∈V V m(1 , ϱ ) − E
+
+hP(τπ −1)  
+
+> h=1
+
+r(Sπh , π h(Sπh )) 
+
+i
+
+PV (τπ ≤ H)Let us show that 
+
+{λ ≥ 0 : f (λ) ≥ sup 
+
+> m∈V
+
+V m(1 , ϱ )} = [ L, ∞) ,
+
+Taking the minimum over λ will close the argument. By Proposition 3.1, f is a supremum over policys π of the affine functions 
+
+gπ : λ 7 → λP (τπ ≤ H) + E
+
+"τπ −1X
+
+> h=1
+
+r(Sπh , π h(Sπh )) 
+
+#
+
+,
+
+whose slopes P (τπ ≤ H) are probabilities, hence lie in [0 , 1]. Thus, for all λ, λ ′ ≥ 0 and every route π,
+
+gπ (λ) ≤ gπ (λ′) + |λ − λ′| ≤ f (λ′) + |λ − λ′|.
+
+Taking the supremum over routes gives f (λ) ≤ f (λ′) + |λ − λ′|, where f (λ′) ≤ H + λ′ < ∞. Exchanging λ and 
+
+λ′ yields |f (λ) − f (λ′)| ≤ | λ − λ′|, so f is 1-Lipschitz, and in particular continuous.This will be used later. Suppose f (λ) ≥ sup m∈V V m(1 , ϱ ). By the finite-horizon dynamic-programming recursion, the supremum is attained by some policy πλ such that 
+
+f (λ) = gπλ (λ).
+
+Thus 
+
+λP (τπλ ≤ H) ≥ sup 
+
+> m∈V
+
+V m(1 , ϱ ) − E
+
+ 
+
+> τπλ−1
+
+X
+
+> h=1
+
+r(Sπλh 
+
+> h
+
+, π λh (Sπλh 
+
+> h
+
+)) 
+
+ ≥ sup 
+
+> m∈V
+
+V m(1 , ϱ ) − f (0) > 0where the last inequality is in the lemmas assumptions. This shows P (τπ ≤ H) > 0, thus sup m∈V V m(1 , ϱ ) − E
+
+hPτπλ −1 
+
+> h=1
+
+r(Sπλh 
+
+> h
+
+, π λh (Sπλh 
+
+> h
+
+)) 
+
+i
+
+P (τπλ ≤ H) ≤ λ. 
+
+Taking the infimum over both sides gives us λ ≥ L.Conversely, let λ > L . The infimum definition of L implies that there exists some route π such as sup m∈V V m(1 , ϱ ) − E
+
+hPτπ −1 
+
+> h=1
+
+r(Sπh , π h(Sπh )) 
+
+i
+
+PV (τπ < H ) < λ. 
+
+Rearranging and taking the supremum gives us f (λ) > sup m∈V V m(1 , ϱ ). By continuity of f , we also have 
+
+f (L) ≥ sup m∈V V m(1 , ϱ ) which gives us the same large inequality the edge case of λ = L.B.3 Proof of Proposition 3.2 
+
+We prove the main performance guarantee for λ-planning. 
+
+Proposition 3.2. For any u ∈ C 0, and any T ≥ 1, the λ-planning algorithm (Algorithm 2) satisfies 
+
+Eu
+
+R(T ) ≤ Eu
+
+" TX
+
+> t=1
+
+˚λt(Ψ t − Ψt+1 )
+
+#
+
+wherein Ψt := Ψ C0 (Vt).Proof of Proposition 3.2. Fix u ∈ C 0, and let Ft denote the information available before episode t, including the choice of πt. Set ˚λt = ˚λVt
+
+ I(Vt) and Ψt = Ψ C0 (Vt),
+
+where ΨC0 (V) := dim ϕ U (C0) − dim  ϕ U (C0) ∩ U +(V) .
+
+and Let τπt be the first time that πt reaches I(Vt), with τπt = ∞ if no such pair is reached during the episode. The reach probability is 
+
+Pu(τπt ≤ H | F t). The fact that we condition on Ft is because we are no longer considering any U (V) ⊆ T but the random variable I(Vt). By definition of πt we have 
+
+J˚λt,T 
+
+> V,π t
+
+(h, s ) ≥ sup 
+
+> m∈V
+
+V m(1 , ϱ ) ≥ V u(1 , ϱ )In the proof of Lemma 3.3 we show that πt is such that ˚λVt
+
+ I(Vt):
+
+J˚λt,T 
+
+> V,π t
+
+(h, s ) = ˚λtPu(τπt ≤ H | F t) + Eu
+
+"τπ −1X
+
+> h=1
+
+r(Sπh , π h(Sπh )) | F t
+
+#
+
+≤ ˚λtPu(τπt ≤ H | F t) + Juπt (1 , ϱ )thus V u(1 , ϱ ) − Juπt (1 , ϱ )
+
+≤ ˚λt Pu(τπt ≤ H | F t) . (5) As in the previous proof, consider the case where we are on a non zero-regret episodes, so its right-hand side is nonnegative. It remains to relate the probability in (5) to the increment in Ψ t and taking the expectation will yield the result. Since Vt+1 ⊆ V t,
+
+U +(Vt) ⊆ U +(Vt+1 ),
+
+so Ψ t+1 ≤ Ψt on every sample path. Recall 
+
+I(V) := z : ϕz ∈ U +(V) + span ϕ(U (V)) , ϕ z /∈ U +(V) ⊇ U (V).
+
+On the event {τπt ≤ H}, let z denote the first pair reached in I(Vt). Thus we can write 
+
+ϕz = w + v, w ∈ U +(Vt),v ∈ span ϕ(U (Vt)) , v / ∈ U +(Vt).
+
+Because Vt ⊆ C 0 we have U (Vt) ⊆ U (C0), so v ∈ span ϕ(U (C0)). Playing z reveals ϕ⊤ 
+
+> z
+
+u, , hence ϕz ∈ U +(Vt+1 ). Since w also belongs to this subspace, 
+
+v = ϕz − w ∈ span ϕ(U (C0)) ∩ U +(Vt+1 ),whereas v / ∈ span ϕ(U (C0)) ∩ U +(Vt). Recall ΨC0 (V) := dim ϕ U (C0) − dim  ϕ U (C0) ∩ U +(V) .
+
+The intersection in Ψ C0 therefore gains at least one dimension. This proves 
+
+1{τπt ≤ H} ≤ Ψt − Ψt+1 . (6) Taking conditional expectations in (6) and substituting into (5), we obtain 
+
+V u(1 , ϱ ) − Juπt (1 , ϱ )
+
+≤ Eu
+
+h˚λt(Ψ t − Ψt+1 ) Ft
+
+i
+
+,
+
+where we used that ˚λt is nonnegative and Ft-measurable. Finally, summing over episodes and applying the tower property gives 
+
+Eu[R(T )] =
+
+> T
+
+X
+
+> t=1
+
+Eu
+
+V u(1 , ϱ ) − Juπt (1 , ϱ )
+
+≤ Eu
+
+" TX
+
+> t=1
+
+˚λt(Ψ t − Ψt+1 )
+
+#
+
+.
+
+Hence the result. 
+
+Remark B.1. Proposition 3.1 and Lemma 3.3 are proved for arbitrary target sets, the agent being allowed to stop at any pair of U (Vt) ⊆ T , the same proof gives the same bound for any Ft-measurable targets U (Vt) ⊆
+
+Tt ⊆ I(Vt), with prices ˚λVt (Tt). These prices are non-increasing in Tt, so Tt = I(Vt) yields the smallest ones. 
+
+B.4 Proof of Theorem 2.1 
+
+Here we provide explicit construction of the MDP offering the lower bound on the regret of any learning algorithm. 
+
+Theorem 2.1. Let C0 = B2(0 , 1) be the Euclidean ball. For every d ≥ 2 and every H ≥ 1, there is a masked MDP with dim ϕ(U (C0)) = d on which any algorithm satisfies 
+
+sup 
+
+> u⋆∈C 0
+
+Eu⋆
+
+R(T ) ≥ H
+
+4 min {T, d − 1}.
+
+Proof of Theorem 2.1. Let N := d − 1 ≥ 2, take the initial distribution ρ = δs1 , and consider the masked MDP of Figure 2: A = {a1, . . . , a N }; from s1, every action leads deterministically to s2 with reward 1, and in s2 every action loops deterministically on s2 with reward 1. Take 
+
+ϕ(s1, a j ) = ej , ϕ(s2, a j ) = ed, j ∈ [N ].
+
+This is a linear MDP: for instance, one may take 
+
+θr =
+
+> d
+
+X
+
+> i=1
+
+ei, θP (s2) = 
+
+> d
+
+X
+
+> i=1
+
+ei, θP (s) = 0 for s̸ = s2.
+
+Then 
+
+r(s, a ) = ϕ(s, a )⊤θr = 1 on both s1 and s2, while 
+
+P (s, a, s 2) = ϕ(s, a )⊤θP (s2) = 1 .Moreover, every pair is uncertified under C0, and span  ϕ(U (C0))  = span( e1, . . . , e d),
+
+so dim ϕ(U (C0)) = d.For J ∈ [N ], let 
+
+u(J) := 1
+
+√d
+
+
+
+eJ − X 
+
+> j∈[N]\{ J}
+
+ej + ed
+
+
+
+∈ C 0,
+
+under which aJ is the only valid action in s1, while every action is valid in s2. Draw J uniformly in [ N ]. Every episode in which an invalid action is played in s1 incurs regret H, since the optimal value is H whereas the episode then moves to the cemetery state and collects no reward. Playing aj with j̸ = J reveals the score −1/√d, independently of the value of J, and rewards and transitions are deterministic and known. Conditional on the internal randomisation of the algorithm, let ( k1, k 2, . . . ) denote the sequence of actions selected in s1 along the counterfactual history in which every action tried so far is invalid. Since the feedback following any such failure is always the same, this sequence is independent of J.If J / ∈ { k1, . . . , k t}, then the realised history coincides with this all-failures history through episode t, and episode 
+
+t incurs regret H. Since J is uniform on [ N ] and |{ k1, . . . , k t}| ≤ t,
+
+P J / ∈ { k1, . . . , k t} ≥ N − tN .
+
+Therefore, 
+
+ER(T ) ≥ H 
+
+> min {T,N }
+
+X
+
+> t=1
+
+N − tN
+
+= H m(2 N − m − 1) 2N
+
+≥ H m(N − 1) 2N
+
+≥ Hm 
+
+4 ,
+
+where m := min {T, N } ≤ N and N ≥ 2. Since the supremum over u⋆ ∈ C 0 dominates the average over J, this gives sup 
+
+> u⋆∈C 0
+
+Eu⋆
+
+R(T ) ≥ H
+
+4 min {T, d − 1}.
+
+The second inequality follows from min {T, d − 1} ≥ 12 min {T, d }, d ≥ 2.
+
+B.5 Proof of Theorem 2.3 
+
+Here we prove that that mask learning can be separated from the problem of learning the the underlying MDP, motivating our choice to study the mask learning problem in isolation. 
+
+Theorem 2.3. Consider a reasonable algorithm that is jointly optimistic in the mask and the linear MDP. Let 
+
+pt be the probability, conditional on the information available before episode t, that an action is attempted that is invalid under the true mask. If the analysis of A holds under the joint interaction 6, with 
+
+P
+
+> T
+
+X
+
+> t=1
+
+βt ≤ Blin (T, H, δ/ 2) 
+
+!
+
+≥ 1 − δ/ 2.
+
+> 6E.g. , discarding this data and adapting regret time.
+
+Then 
+
+R(T ) ≤ Blin (T, H, δ/ 2) + H min {T, r 0} +
+
+r T
+
+2 log 2
+
+δ
+
+!
+
+with probability at least 1 − δ, wherein r0 := dim ϕ(U (C0)) . A high-probability bonus bound for the learner on an unmasked MDP alone does not imply the joint-interaction assumption above. Proof of Theorem 2.3. Let Ψt := Ψ C0 (Vt).
+
+Let Xt be the indicator of the event that an invalid action is attempted in episode t. If Xt = 1, the attempted action is truly invalid, so its exact observed mask score is strictly negative. Its feature was initially uncertified: it could not have been initially certified valid, and the algorithm does not select certified-invalid pairs. Moreover, its feature is not in U +(Vt), since otherwise its score would already be known to be negative and the pair would be certified invalid. The feature therefore lies in the span of the initially undecided features but adds a new known direction when its scalar score is observed. Thus Ψ t − Ψt+1 ≥ 1 whenever Xt = 1. The potential is nonincreasing and starts at r0, which gives, pathwise, 
+
+> T
+
+X
+
+> t=1
+
+Xt ≤ min {T, r 0}.
+
+The sequence Xt − pt is a martingale-difference sequence with increments of range length one. By the one-sided Azuma–Hoeffding inequality, with probability at least 1 − δ/ 2, 
+
+> T
+
+X
+
+> t=1
+
+pt ≤
+
+> T
+
+X
+
+> t=1
+
+Xt +
+
+r T
+
+2 log 2
+
+δ ≤ min {T, r 0} +
+
+r T
+
+2 log 2
+
+δ .
+
+Intersect this event with the assumed bonus event, also of probability at least 1 − δ/ 2. On the intersection, sum the episode-wise decomposition ∆ t ≤ βt + Hp t over t to obtain the claimed bound. A union bound gives probability at least 1 − δ.
+
+# C PARTIALLY LEARNT SOURCE 
+
+In this Section we consider a single-transfer setting in which the source task u(1) is only partially learnt before transfer. Starting from C0, the source algorithm is stopped once l of the d−1 mask directions have been identified. The resulting version space V0 is then transferred to the target, drawn uniformly in C0 ∩ B(u(1) , ρ ) whose version space becomes ( V0 ⊕ B(0 , ρ )) ∩ C 0. This partial transfer preserves the information already learnt on the source even though the entire source mask is not learnt, making it less restrictive than transferring the source solution entirely. As in the single-step setting, we compare this initialization with the same algorithm run on the same target from the full version space C0.0 3 6 9 12 15 0510 15 20 
+
+# directions learnt 𝑙 
+
+> E[𝑅  (∞) ]
+
+# VSO 𝜆 -planning transfer no transfer Figure 7: Partially learnt source: total regret against the number l of source directions learnt before transfer, 
+
+d = 16. Solid: started from ( V0 ⊕ B(0 , ρ )) ∩ C 0; dashed: no transfer, started from C0.Figure 7 shows that useful transfer does not require a fully learnt source: additional identified directions pro-gressively reduce target regret for both algorithms. Their similar performance for most values of l indicates that much of the improvement comes from the transferred information itself. A slight advantage for λ-planning ap-pears when all source directions have been identified, presumably arising from the large a proportion of certified actions that it can use to plan. 
+
+# D ACTION OPTIMISM - EXTENDED VALUE ITERATION 
+
+Version-space optimism requires finding a single consistent mask under which the optimal value is maximal. Although planning for a fixed mask is straightforward, searching over compatible masks can be costly. This motivates a relaxation that applies optimism locally, in the spirit of extended value iteration: retain an action whenever some parameter in the current version space makes it valid. Once these action sets are constructed, the policy is obtained by a single backward value-iteration pass. This relaxation avoids a separate planning problem for each compatible mask. The policy played is the optimal policy πV = V I (M( bAV )) of the MDP with the following optimistic action set: 
+
+bAV (s) := [
+
+> u∈V
+
+Au(s) = {a : ∃ u ∈ V , ⟨ϕ(s, a ), u ⟩ ≥ 0}
+
+Note that there is no reason why one mask structurally admits them all, as different actions may be justified by different parameters, so the algorithm may plan with a model that does not exist in the version space. The relaxation is also strictly looser, noting bV1,V (ϱ) = V πV ,M( bAV )(ϱ) we have sup 
+
+> m∈V
+
+V m(1 , ϱ ) ≤ bV1,V (ϱ)
