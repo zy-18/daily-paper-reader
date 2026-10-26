@@ -1,9 +1,9 @@
 {
   "date": "20260927-20261026",
   "date_label": "2026-09-27 ~ 2026-10-26",
-  "generated_at": "2026-10-26 12:17:26 UTC",
+  "generated_at": "2026-10-26 12:24:14 UTC",
   "recommend_exists": true,
-  "run_count": 1,
+  "run_count": 2,
   "papers": [
     {
       "paper_id": "2609.33337v1",
@@ -19,7 +19,7 @@
       "score": 9.0,
       "evidence": "用HJ可达性施加逐状态硬安全约束的在线安全强化学习",
       "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
+      "updated_at": "2026-10-26 12:24:14 UTC"
     },
     {
       "paper_id": "2610.02520v1",
@@ -35,7 +35,39 @@
       "score": 9.0,
       "evidence": "有限动作表格CMDP中带保证的安全探索",
       "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
+      "updated_at": "2026-10-26 12:24:14 UTC"
+    },
+    {
+      "paper_id": "2610.12420v1",
+      "route": "20260927-20261026/2610.12420v1-a-unified-bellman-operator-for-safety-critical-reinforcement-learning",
+      "title": "A Unified Bellman Operator for Safety-Critical Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "统一贝尔曼算子联合优化性能与安全并提供收敛保证",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
+    },
+    {
+      "paper_id": "2610.12432v1",
+      "route": "20260927-20261026/2610.12432v1-faith-feasibility-aware-safety-filtered-rl-for-high-dimensional-systems",
+      "title": "FAITH: Feasibility-Aware Safety-Filtered RL for High-Dimensional Systems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向高维系统的可行性感知无模型安全过滤强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
     },
     {
       "paper_id": "2610.17799v1",
@@ -51,7 +83,7 @@
       "score": 9.0,
       "evidence": "结合CBF-MPC安全过滤与稳定策略提升的在线安全强化学习",
       "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
+      "updated_at": "2026-10-26 12:24:14 UTC"
     },
     {
       "paper_id": "2610.23445v1",
@@ -67,12 +99,12 @@
       "score": 9.0,
       "evidence": "基于恢复的屏蔽机制强制安全属性并提供保证",
       "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
+      "updated_at": "2026-10-26 12:24:14 UTC"
     },
     {
-      "paper_id": "2609.34041v1",
-      "route": "20260927-20261026/2609.34041v1-vision--language-signals-in-constrained-rl-safety-gains-without-anticipation",
-      "title": "Vision--Language Signals in Constrained RL: Safety Gains Without Anticipation",
+      "paper_id": "2609.34486v1",
+      "route": "20260927-20261026/2609.34486v1-model-informed-safe-reinforcement-learning-for-bipedal-locomotion-via-step-to-step-prediction",
+      "title": "Model-Informed Safe Reinforcement Learning for Bipedal Locomotion via Step-to-Step Prediction",
       "section": "quick",
       "tags": [
         {
@@ -81,14 +113,14 @@
         }
       ],
       "score": 8.0,
-      "evidence": "基于PPO-拉格朗日的安全强化学习与安全收益分析",
-      "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
+      "evidence": "离散指数控制屏障函数用作运行时动作滤波器",
+      "first_seen_at": "2026-10-26 12:24:14 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
     },
     {
-      "paper_id": "2610.12420v1",
-      "route": "20260927-20261026/2610.12420v1-a-unified-bellman-operator-for-safety-critical-reinforcement-learning",
-      "title": "A Unified Bellman Operator for Safety-Critical Reinforcement Learning",
+      "paper_id": "2609.34966v1",
+      "route": "20260927-20261026/2609.34966v1-safe-greenhouse-climate-control-using-lagrangian-constrained-ppo-with-kolmogorov-arnold-networks",
+      "title": "Safe Greenhouse Climate Control Using Lagrangian-Constrained PPO with Kolmogorov-Arnold Networks",
       "section": "quick",
       "tags": [
         {
@@ -97,14 +129,14 @@
         }
       ],
       "score": 8.0,
-      "evidence": "统一贝尔曼算子联合优化性能与安全并提供收敛保证",
-      "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
+      "evidence": "以CMDP和拉格朗日安全强化学习约束累积违规",
+      "first_seen_at": "2026-10-26 12:24:14 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
     },
     {
-      "paper_id": "2610.12432v1",
-      "route": "20260927-20261026/2610.12432v1-faith-feasibility-aware-safety-filtered-rl-for-high-dimensional-systems",
-      "title": "FAITH: Feasibility-Aware Safety-Filtered RL for High-Dimensional Systems",
+      "paper_id": "2609.38655v1",
+      "route": "20260927-20261026/2609.38655v1-forward-invariant-policy-classes-for-safe-reinforcement-learning-in-multicopter-control",
+      "title": "Forward-Invariant Policy Classes for Safe Reinforcement Learning in Multicopter Control",
       "section": "quick",
       "tags": [
         {
@@ -113,9 +145,41 @@
         }
       ],
       "score": 8.0,
-      "evidence": "面向高维系统的可行性感知无模型安全过滤强化学习",
-      "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
+      "evidence": "通过有限控制器库将安全性嵌入策略类，探索中亦具保证",
+      "first_seen_at": "2026-10-26 12:24:14 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
+    },
+    {
+      "paper_id": "2610.09508v1",
+      "route": "20260927-20261026/2610.09508v1-safe-on-average-unsafe-in-the-tail-when-is-the-episodic-cost-tail-controllable",
+      "title": "Safe on Average, Unsafe in the Tail: When Is the Episodic-Cost Tail Controllable?",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "带回合成本约束的安全强化学习与CVaR尾部安全分析",
+      "first_seen_at": "2026-10-26 12:24:14 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
+    },
+    {
+      "paper_id": "2610.12153v1",
+      "route": "20260927-20261026/2610.12153v1-toward-optimal-regret-in-adversarial-mdps-with-stochastic-hard-constraints",
+      "title": "Toward Optimal Regret in Adversarial MDPs with Stochastic Hard Constraints",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "每回合满足硬约束并取得最优遗憾的约束MDP",
+      "first_seen_at": "2026-10-26 12:24:14 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
     },
     {
       "paper_id": "2610.13737v1",
@@ -130,6 +194,70 @@
       ],
       "score": 8.0,
       "evidence": "带联合安全约束与信用分配的安全多智能体强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
+    },
+    {
+      "paper_id": "2610.21548v1",
+      "route": "20260927-20261026/2610.21548v1-finite-time-guarantees-for-constrained-reinforcement-learning-under-partial-observability",
+      "title": "Finite-Time Guarantees for Constrained Reinforcement Learning under Partial Observability",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "带约束违反有限时间界的约束强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
+    },
+    {
+      "paper_id": "2610.26256v1",
+      "route": "20260927-20261026/2610.26256v1-locu-lowdin-orthogonalized-constraint-updates-for-multi-constraint-policy-optimization",
+      "title": "LOCU: Lowdin-Orthogonalized Constraint Updates for Multi-Constraint Policy Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "CMDP多约束策略优化与信赖域约束处理",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
+    },
+    {
+      "paper_id": "2610.30756v1",
+      "route": "20260927-20261026/2610.30756v1-primal-dual-representation-learning-for-low-rank-constrained-mdps",
+      "title": "Primal-Dual Representation Learning for Low-Rank Constrained MDPs",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "约束MDP中控制约束违反的原始-对偶表示学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:24:14 UTC"
+    },
+    {
+      "paper_id": "2609.34041v1",
+      "route": "20260927-20261026/2609.34041v1-vision--language-signals-in-constrained-rl-safety-gains-without-anticipation",
+      "title": "Vision--Language Signals in Constrained RL: Safety Gains Without Anticipation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于PPO-拉格朗日的安全强化学习与安全收益分析",
       "first_seen_at": "2026-10-26 12:17:26 UTC",
       "updated_at": "2026-10-26 12:17:26 UTC"
     },
@@ -150,38 +278,6 @@
       "updated_at": "2026-10-26 12:17:26 UTC"
     },
     {
-      "paper_id": "2610.21548v1",
-      "route": "20260927-20261026/2610.21548v1-finite-time-guarantees-for-constrained-reinforcement-learning-under-partial-observability",
-      "title": "Finite-Time Guarantees for Constrained Reinforcement Learning under Partial Observability",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "safe-rl"
-        }
-      ],
-      "score": 8.0,
-      "evidence": "带约束违反有限时间界的约束强化学习",
-      "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
-    },
-    {
-      "paper_id": "2610.26256v1",
-      "route": "20260927-20261026/2610.26256v1-locu-lowdin-orthogonalized-constraint-updates-for-multi-constraint-policy-optimization",
-      "title": "LOCU: Lowdin-Orthogonalized Constraint Updates for Multi-Constraint Policy Optimization",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "safe-rl"
-        }
-      ],
-      "score": 8.0,
-      "evidence": "CMDP多约束策略优化与信赖域约束处理",
-      "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
-    },
-    {
       "paper_id": "2610.29149v1",
       "route": "20260927-20261026/2610.29149v1-safter-safety-aware-filtering-through-explicit-recoverability-for-robust-reinforcement-learning-under-distribution-shift",
       "title": "SAFTER: Safety-Aware Filtering Through Explicit Recoverability for Robust Reinforcement Learning under Distribution Shift",
@@ -194,22 +290,6 @@
       ],
       "score": 8.0,
       "evidence": "嵌入安全强化学习训练的控制屏障函数滤波器",
-      "first_seen_at": "2026-10-26 12:17:26 UTC",
-      "updated_at": "2026-10-26 12:17:26 UTC"
-    },
-    {
-      "paper_id": "2610.30756v1",
-      "route": "20260927-20261026/2610.30756v1-primal-dual-representation-learning-for-low-rank-constrained-mdps",
-      "title": "Primal-Dual Representation Learning for Low-Rank Constrained MDPs",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "safe-rl"
-        }
-      ],
-      "score": 8.0,
-      "evidence": "约束MDP中控制约束违反的原始-对偶表示学习",
       "first_seen_at": "2026-10-26 12:17:26 UTC",
       "updated_at": "2026-10-26 12:17:26 UTC"
     },

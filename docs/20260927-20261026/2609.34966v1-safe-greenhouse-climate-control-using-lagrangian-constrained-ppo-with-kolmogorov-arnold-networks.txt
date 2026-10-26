@@ -1,0 +1,724 @@
+Title: Safe Greenhouse Climate Control Using Lagrangian-Constrained PPO with Kolmogorov-Arnold Networks
+
+URL Source: https://arxiv.org/pdf/2609.34966v1
+
+Published Time: Tue, 29 Sep 2026 03:52:36 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+Safe Greenhouse Climate Control Using Lagrangian-Constrained PPO with Kolmogorov–Arnold Networks 
+
+## Hanzun Liu a,1 , Yuling Fan a,1 , Fang Tian a,b , Zhilong Bie a, Zaiwen Feng a,b ,∗ and Yongliang Qiao c,d ,∗
+
+> a
+
+College of Informatics, Huazhong Agricultural University, Wuhan 430070, China 
+
+> b
+
+Yunnan Modern Agricultural Industry Research Institute Co., Ltd.,Kunming, Yunnan 650000, China 
+
+> c
+
+College of Biological and Agricultural Engineering, Jilin University, Changchun 130022, China 
+
+> d
+
+Key Laboratory of Efficient Sowing and Harvesting Equipment, Ministry of Agriculture and Rural Affairs, Jilin University, Changchun 130022, China 
+
+A R T I C L E I N F O 
+
+Keywords :Greenhouse Climate Control Reinforcement Learning Constrained Markov Decision Process Proximal Policy Optimization Intelligent Perception Smart Farming 
+
+A B S T R A C T 
+
+Greenhouse climate control requires balancing economic return and maintaining temperature, hu-midity and CO 2 within crop-adapted growth ranges. Conventional reinforcement learning (RL) greenhouse controllers rely on fixed reward penalties to restrict climate constraint violations, yet such heuristic penalties fail to explicitly constrain long-term cumulative violations; improperly tuned weights either make policies overly conservative and reduce yields or fail to suppress sustained climate deviations that inhibit photosynthesis and trigger crop diseases. To tackle this limitation, this work first formulates the greenhouse climate regulation task as a Constrained Markov Decision Process (CMDP), and adopts a Lagrangian-based safe RL framework named Reward Constrained Policy Optimization-Proximal Policy Optimization (RCPO-PPO) to separate economic optimization and cumulative safety constraints, which adaptively adjusts penalty intensity without manual weight tuning. To address the strong nonlinear and time-varying coupling between greenhouse microclimate and crop growth, Kolmogorov–Arnold Networks (KANs) replace standard Multi-Layer Perceptrons (MLPs) as policy and value approximators for enhanced nonlinear representation, while sinusoidal cyclic time features are embedded into observations to represent diurnal periodic environmental variations. Simulations are carried out on a classic winter lettuce greenhouse dynamic model with 40-day real-weather disturbance inputs. Results show that, compared with penalty-based vanilla Proximal Policy Optimization (PPO), the proposed method reduces cumulative climate constraint violations by 18.65% and increases the total economic profit of lettuce cultivation by 2.91%, while stably keeping cumulative climate violations close to the preset safety threshold. These results indicate that the decoupled CMDP-based constrained optimization together with enhanced KAN-driven policy representation can effectively mitigate long-term climate risks while simultaneously improving planting economic benefits, offering a promising constraint-aware control strategy for precision greenhouse cultivation. 
+
+## 1. Introduction 
+
+Greenhouse plant production enables stable and high-quality food supply by regulating the indoor climate under varying outdoor weather conditions[1, 2, 3]. Key variables such as air temperature, humidity, and carbon dioxide (CO 2)concentration strongly influence photosynthesis, biomass accumulation, and plant health[4]. In practice, greenhouse operation must simultaneously achieve two long-term goals: (i) maintain the climate within ranges that are suitable for plant growth and disease prevention[5], and (ii) reduce op-erational costs related to heating, ventilation, and CO 2 en-richment to improve economic returns[6, 7]. This creates a fundamental trade-off between production profit and climate regulation reliability. A wide range of greenhouse climate control methods have been developed, including rule-based strategies[8], proportional–integral–derivative (PID) controllers[9], and model predictive control (MPC)[10]. Among them, MPC is attractive because it can explicitly incorporate multivariable dynamics, constraints, and disturbance forecasts[11]. How-ever, model-based performance depends on the accuracy of the underlying greenhouse–crop model, and capturing the 
+
+> ∗
+
+Corresponding author  
+
+> zaiwen.feng@mail.hzau.edu.cn
+
+(Z. Feng); ylqiao@jlu.edu.cn (Y. Qiao) 
+
+> 1
+
+These authors contributed equally to this work. 
+
+nonlinear and uncertain interactions between crop physi-ology, indoor climate, and external disturbances remains challenging[12, 13], especially across different crops, sea-sons, and operating conditions. Reinforcement learning has therefore gained increasing attention as a data-driven alternative that can optimize long-horizon objectives through interaction with a simulator or real system[14, 15]. Recent studies have shown that Re-inforcement learning can improve economic performance in greenhouse control tasks[16, 17]. Nevertheless, a ma-jor barrier to the practical deployment of reinforcement learning in greenhouse climate control is the potentially harmful impact of constraint violations on crop growth and plant health. Prolonged deviations in temperature, humid-ity, or CO 2 concentration can suppress photosynthesis[18, 19, 20], promote disease development, and reduce biomass accumulation. In most existing RL-based greenhouse con-trollers, such climate requirements are enforced only indi-rectly through penalty terms in the reward function[21, 22]. However, designing such heuristic scalar penalty functions is highly non-trivial and often fragile in complex environ-mental control tasks[23]. Although this heuristic approach can reduce violations, it offers no explicit control over the long-horizon magnitude or duration of violations, as these metrics are governed by manually tuned penalty weights. More critically, fixed-penalty formulations frequently lead to suboptimal policies. Heavy penalties imposed for early 
+
+Liu and Fan et al.: Preprint submitted to Elsevier Page 1 of 12 arXiv:2609.34966v1 [cs.AI] 28 Sep 2026 Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control 
+
+constraint violations can trap the agent in conservative local optima[24], deterring exploration and severely sacrificing performance, while trivially small penalties fail to deter un-safe behaviors[25]. Consequently, safety performance fluc-tuates across different weather conditions and training runs, obscuring the true trade-off between economic profit and crop protection. These considerations motivate a control framework in which long-horizon constraint violations can be explicitly specified and regulated. In recent years, safe reinforcement learning has emerged as a principled paradigm for handling such requirements and has been successfully applied in safety-critical domains such as robotics[26], autonomous driving[27], and energy systems[28], where policies must optimize performance while satisfying strict operational constraints[29, 30]. To address these limitations, this study formulate green-house climate control as a Constrained Markov Decision Process [31], where economic profit is optimized subject to explicit constraints on cumulative climate violations. Based on this formulation, we adopt a safe reinforcement learning approach to regulate long-horizon violations during policy learning, rather than relying on heuristic fixed penalties. Beyond explicit constraint regulation, control performance also depends on policy expressiveness and the availability of informative observations. To improve nonlinear representa-tion and account for diurnal dynamics, Proximal Policy Opti-mization [32] is augmented with Kolmogorov–Arnold Net-works [33], drawing inspiration from recent integration of KANs in online reinforcement learning environments[34], alongside cyclic time features ( sin ∕ cos encoding). Figure 1 illustrates the overall framework of the pro-posed KAN-based safe reinforcement learning greenhouse climate control system. In brief, greenhouse climate control is first formulated as a Constrained Markov Decision Process to explicitly distinguish economic objectives and climate regulation con-straints. A safe reinforcement learning framework is adopted to suppress cumulative climate violations and attain ad-justable trade-offs between profit and long-term safety. Meanwhile, enhanced policy representation together with cyclic time encoding is introduced to improve nonlinear fitting and capture periodic diurnal dynamics. The main contributions of this work are as follows: • A greenhouse-specific CMDP formulation is devel-oped that explicitly separates economic returns from cumulative climate-risk constraints. • An interpretable cumulative climate-violation cost de-sign is proposed, enabling growers to specify a long-horizon violation budget. • The combined value of adaptive Lagrangian con-straint handling, KAN-based policy representation, and cyclic time encoding is systematically validated on a lettuce greenhouse model. • Simulation results show that the integrated controller reduces cumulative climate violations while improv-ing economic profit compared with a penalty-based PPO baseline. 
+
+## 2. Background 
+
+2.1. Greenhouse Climate Model 
+
+The greenhouse environment considered in this study is a winter lettuce production system described by a nonlinear greenhouse–crop dynamic model proposed in [35]. This coupled model simultaneously captures indoor microclimate evolution and crop growth dynamics, which is suitable for evaluating climate control strategies related to crop yield and environmental constraints. The structure of the model is shown in Figure 2, and the specific definitions of the state, input, output, and disturbance variables are summarized in Table 1. The continuous-time model is discretized using the fourth-order Runge–Kutta method with a fixed sampling time Δ𝑡 = 30 min, resulting in the following discrete-time nonlinear state–space representation: 
+
+𝑥 (𝑘 + 1) = 𝑓 (𝑥 (𝑘 ), 𝑢 (𝑘 ), 𝑑 (𝑘 ), 𝑝 ),𝑦 (𝑘 ) = 𝑔 (𝑥 (𝑘 ), 𝑝 ). (1) where 𝑘 ∈ ℤ0 denotes the discrete-time counter. Specif-ically, 𝑥 (𝑘 ) ∈ ℝ4 is the system state vector, 𝑢 (𝑘 ) ∈
+
+ℝ3 represents the manipulable control input, 𝑑 (𝑘 ) ∈ ℝ4
+
+accounts for the uncontrollable weather disturbance, and 
+
+𝑦 (𝑘 ) ∈ ℝ4 denotes the system output vector reflecting measurable greenhouse-crop states. The vector 𝑝 ∈ ℝ28 
+
+stands for the model parameters characterizing the physical, thermal, and biological properties of the system. The explicit expressions of the nonlinear functions 𝑓 (⋅) and 𝑔 (⋅) are detailed in Appendix A. 
+
+2.2. CMDP and Safety Reinforcement Learning 
+
+2.2.1. Constrained Markov Decision Process 
+
+A Constrained Markov Decision Process extends the standard Markov Decision Process (MDP) [36] by explic-itly incorporating long-term constraints into the decision-making framework. A standard MDP is defined by the tuple 
+
+ = ⟨, , 𝑃 , 𝑟, 𝛾 ⟩, where  is the state space,  is the action space, 𝑃 (𝑠 ′|𝑠, 𝑎 ) is the transition probability, 𝑟 (𝑠, 𝑎 )
+
+is the reward function, and 𝛾 ∈ (0 , 1) is the discount factor. The classical objective is to find a policy 𝜋 that maximizes the expected discounted return: 
+
+𝐽 𝑟 (𝜋 ) = 𝔼 𝜋 
+
+[ ∞∑
+
+> 𝑡 =0
+
+𝛾 𝑡 𝑟 (𝑠 𝑡 , 𝑎 𝑡 )
+
+]
+
+. (2) To introduce safety requirements, a CMDP augments the standard formulation with cost functions and thresholds, defined as 𝑐 = ⟨, , 𝑃 , 𝑟, {𝑐 𝑖 }𝑚 𝑖 =1 , 𝛾, {𝑑 𝑖 }𝑚 𝑖 =1 ⟩. The cor-responding optimization problem is formulated as follows:   
+
+> Liu and Fan et al.: Preprint submitted to Elsevier Page 2 of 12
+
+Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control 
+
+Figure 1: Framework of the proposed KAN-based safe reinforcement learning greenhouse climate control system. 
+
+Figure 2: Greenhouse-crop system dynamic relationship diagram. 
+
+max  
+
+> 𝜋
+
+𝐽 𝑟 (𝜋 ) = 𝔼 𝜋 
+
+[ ∞∑
+
+> 𝑡 =0
+
+𝛾 𝑡 𝑟 (𝑠 𝑡 , 𝑎 𝑡 )
+
+]
+
+, (3a) s.t. 𝐽 𝑐 𝑖 (𝜋 ) = 𝔼 𝜋 
+
+[ ∞∑
+
+> 𝑡 =0
+
+𝛾 𝑡 𝑐 𝑖 (𝑠 𝑡 , 𝑎 𝑡 )
+
+]
+
+≤ 𝑑 𝑖 ,𝑖 = 1 , … , 𝑚. (3b) Compared with standard MDPs where constraints are im-plicitly handled via reward penalties, the CMDP frame-work explicitly separates performance optimization from constraint satisfaction, where the bounds 𝑑 𝑖 directly quantify the acceptable levels of long-term risk. 
+
+2.2.2. Safe Reinforcement Learning 
+
+Safe Reinforcement Learning aims to learn optimal poli-cies while aiming to satisfy that predefined safety constraints are satisfied during both training and deployment. Guided by the CMDP formulation in (3), the constrained optimization 
+
+Liu and Fan et al.: Preprint submitted to Elsevier Page 3 of 12 Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control                                 
+
+> Table 1
+> Definitions of state, input, output, and disturbance variables State 𝑥 (𝑡 )Output 𝑦 (𝑡 )
+> 𝑥 1(𝑡 )Dry-weight (kg/m 2)𝑦 1(𝑡 )Dry-weight (g/m 2)
+> 𝑥 2(𝑡 )Indoor CO 2(kg/m 3)𝑦 2(𝑡 )Indoor CO 2(ppm)
+> 𝑥 3(𝑡 )Indoor temperature ( ◦C) 𝑦 3(𝑡 )Indoor temperature ( ◦C)
+> 𝑥 4(𝑡 )Indoor humidity (kg/m 3)𝑦 4(𝑡 )Indoor humidity (%) Control input 𝑢 (𝑡 )Disturbance 𝑑 (𝑡 )
+> 𝑢 1(𝑡 )CO 2injection (mg/m 2∕s) 𝑑 1(𝑡 )Radiation (W/m 2)
+> 𝑢 2(𝑡 )Ventilation (mm/s) 𝑑 2(𝑡 )Outdoor CO 2(kg/m 3)
+> 𝑢 3(𝑡 )Heating (W/m 2)𝑑 3(𝑡 )Outdoor temperature ( ◦C)
+> 𝑑 4(𝑡 )Outdoor humidity (kg/m 3)
+
+problem is typically addressed by introducing Lagrange multipliers 𝜆 𝑖 ≥ 0 to construct the following Lagrangian function [31]: 
+
+(𝜋, Λ) = 𝐽 𝑟 (𝜋 ) − 
+
+> 𝑚
+
+∑
+
+> 𝑖 =1
+
+𝜆 𝑖 
+
+(𝐽 𝑐 𝑖 (𝜋 ) − 𝑑 𝑖 
+
+), (4) where Λ = { 𝜆 1, … , 𝜆 𝑚 }. This formulation enables a primal– dual optimization procedure to balance reward maximization and constraint satisfaction [37, 38]. While other promi-nent Safe RL paradigms, such as Control Barrier Func-tions (CBFs) or safe shielding, offer step-wise safety filters, they typically demand a highly precise analytical model of system dynamics[39]. This makes the model-free La-grangian framework more computationally efficient and nat-urally aligned with the long-horizon cumulative constraints typical of agricultural environments. 
+
+2.2.3. Reward Constrained Policy Optimization 
+
+Reward Constrained Policy Optimization (RCPO) is a representative Safe RL algorithm that solves the CMDP problem using an online primal–dual scheme [40]. RCPO updates the policy parameters by maximizing the Lagrangian 
+
+(𝜋, Λ) , while the Lagrange multipliers are adaptively up-dated to penalize constraint violations: 
+
+𝜆 𝑖 ←
+
+[
+
+𝜆 𝑖 + 𝛼 𝜆 
+
+(𝐽 𝑐 𝑖 (𝜋 ) − 𝑑 𝑖 
+
+)] 
+
+> +
+
+, 𝑖 = 1 , … , 𝑚, (5) where 𝛼 𝜆 denotes the learning rate and [⋅]+ represents the projection onto the nonnegative orthant. This adaptive mechanism enables RCPO to maintain the cumulative constraint costs close to the predefined thresh-olds 𝑑 𝑖 , which is particularly suitable for long-term regula-tion of greenhouse climate violations. RCPO exhibits three important properties for green-house climate control: • Interpretability: The explicit Lagrange multipliers provide a clear physical meaning for regulating long-term climate violations against the threshold 𝑑 .• Adaptability: The online multiplier update automat-ically balances economic performance (energy sav-ings) and climate safety under varying weather distur-bances. • Flexibility: RCPO is algorithm-agnostic and seam-lessly integrates with standard policy gradient meth-ods and advanced deep reinforcement learning frame-works. 
+
+2.3. Kolmogorov–Arnold Networks 
+
+Kolmogorov–Arnold Networks have recently been pro-posed as an alternative neural network architecture inspired by the Kolmogorov–Arnold representation theorem [33]. Unlike conventional multilayer perceptrons (MLPs), where nonlinearities are applied at the nodes through fixed acti-vation functions, KANs parameterize nonlinear transforma-tions along the edges using learnable spline functions. This structural difference allows KANs to represent complex non-linear mappings with a different functional decomposition compared to standard feedforward networks. In a KAN layer, each connection between neurons is associated with a learnable univariate function, typically implemented via spline-based parameterization. As a re-sult, nonlinear transformations are distributed across edges rather than concentrated at nodes. This formulation pro-vides flexible function approximation while maintaining a relatively compact parameterization. Recent studies suggest that KANs exhibit strong approximation capability and im-proved interpretability in certain nonlinear regression and control tasks [33]. Beyond static regressions, KAN struc-tures have shown remarkable capacity in handling complex time-series forecasting with highly intertwined frequency components[41], as well as stabilizing policy approxima-tions in continuous online control environments[34]. Given the highly nonlinear interactions among climate variables, crop physiology, and external disturbances in greenhouse systems, enhanced function approximation ca-pacity is desirable for policy and value estimation. There-fore, KANs are employed as the function approximators within the reinforcement learning framework, replacing standard MLP-based policy and value networks. 
+
+## 3. Method 
+
+This section details the problem formulation, algorithm implementation, and observation design of the proposed control strategy. The greenhouse climate control task is   
+
+> Liu and Fan et al.: Preprint submitted to Elsevier Page 4 of 12 Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control
+
+formulated as a CMDP to explicitly separate economic opti-mization objectives and long-term climate safety constraints. An RCPO-based safe reinforcement learning framework is adopted to solve the constrained optimization problem under the PPO backbone. Furthermore, KAN-based policy net-works and cyclic time feature encoding are introduced to enhance nonlinear fitting ability and capture diurnal green-house dynamics. The detailed mathematical formulation and network design are presented below. 
+
+3.1. CMDP formulation for greenhouse climate control 
+
+Control objective. Greenhouse climate control aims to maximize economic return while maintaining indoor climate variables within ranges suitable for crop growth. In prac-tice, temperature, humidity, and CO 2 concentration must be regulated to avoid conditions that may negatively affect plant development. Therefore, the control problem involves balancing two objectives: achieving high economic perfor-mance and limiting climate constraint violations over the long growing horizon. To explicitly represent this trade-off, the greenhouse control problem is formulated as a Con-strained Markov Decision Process. 
+
+CMDP components. The greenhouse control system is modeled as a CMDP (, , 𝑃 , 𝑟, 𝑐, 𝑑, 𝛾 ). At each time step 
+
+𝑡 , the agent receives an observation 𝑠 𝑡 ∈ , selects a control action 𝑎 𝑡 ∈ , and receives a reward 𝑟 𝑡 together with a constraint cost 𝑐 𝑡 .The observation vector contains information describing the greenhouse state, control history, environmental distur-bances, and time features. Specifically, the observation is defined as 
+
+𝑠 𝑡 = [𝑦 (𝑡 ), 𝑢 (𝑡 −1) , 𝑤 (𝑡 ∶ 𝑡 +𝑁 𝑝 ), 𝜏 (𝑡 ), sin( 𝜙 𝑡 ), cos( 𝜙 𝑡 )],
+
+(6) where 𝑦 (𝑡 ) denotes measurable greenhouse outputs including crop dry weight, indoor CO 2 concentration, air temperature, and relative humidity. The term 𝑢 (𝑡 − 1) represents the previous control input vector. The variable 𝑤 (𝑡 ∶ 𝑡 +
+
+𝑁 𝑝 ) denotes the weather look-ahead window: the current values and short-term forecasts of outdoor radiation, CO 2
+
+concentration, air temperature, and relative humidity. In this study 𝑁 𝑝 = 13 at the Δ𝑡 = 30 min sampling interval, i.e., the current step plus twelve half-hour-ahead steps (a 6 h look-ahead). These values are taken directly from the same measured weather time series that drives the simulator (Section 4.1), i.e., a perfect forecast; the identical sequence is used in training and evaluation, and forecast-error effects are not modeled. The scalar 𝜏 (𝑡 ) represents the overall progress of the growing period, while sin( 𝜙 𝑡 ) and cos( 𝜙 𝑡 ) encode the time-of-day using cyclic features to capture diurnal dynam-ics. The control action corresponds to the greenhouse actua-tion inputs 
+
+𝑎 𝑡 = 𝑢 (𝑡 ) = [ 𝑢 𝐶𝑂 2(𝑡 ), 𝑢 𝑣𝑒𝑛𝑡 (𝑡 ), 𝑢 ℎ𝑒𝑎𝑡 (𝑡 )] ⊤, (7) which represent CO 2 injection, ventilation rate, and heating power, respectively. The transition probability 𝑃 (𝑠 𝑡 +1 |𝑠 𝑡 , 𝑎 𝑡 ) is induced by the nonlinear greenhouse dynamics under exogenous weather disturbances and model uncertainties. 
+
+Economic reward (profit). The instantaneous reward re-flects the economic profit obtained during one control in-terval. It is defined as the crop revenue from incremental biomass growth minus actuation costs: 
+
+𝑟 𝑡 = 𝑐 𝐷𝑊 
+
+(𝑥 𝐷𝑊 (𝑡 + 1) − 𝑥 𝐷𝑊 (𝑡 ))
+
+−
+
+(
+
+10 −6 𝑐 𝐶𝑂 2𝑢 𝐶𝑂 2(𝑡 ) + 𝑐 ℎ𝑒𝑎𝑡 𝑢 ℎ𝑒𝑎𝑡 (𝑡 )3.6 × 10 6
+
+)
+
+Δ𝑡, (8) where 𝑥 𝐷𝑊 is the crop dry weight (kg/m 2), 𝑐 𝐷𝑊 is the unit selling price of the crop dry weight (€/kg), and 𝑐 𝐶𝑂 2 and 
+
+𝑐 ℎ𝑒𝑎𝑡 are the unit costs of CO 2 enrichment (€/kg) and heating (€/kWh), respectively. Here 𝑢 𝐶𝑂 2 is in mg/m 2/s, 𝑢 ℎ𝑒𝑎𝑡 in W/m 2, and Δ𝑡 in seconds; the factors 10 −6 (mg →kg) and 
+
+1∕(3 .6 × 10 6) (J →kWh, since 1 kWh = 3 .6 × 10 6 J) make all terms dimensionally consistent in €/m 2. The cumulative profit over the 40-day cultivation horizon is therefore the net return per square meter of greenhouse floor area, which is the quantity reported in Table 7. Ventilation cost is neglected, consistent with common assumptions in greenhouse climate control studies. 
+
+Climate constraint cost (accumulated violation) To quantify deviations from acceptable climate conditions, con-straint violations are defined based on the distance between the indoor climate variables and their allowable ranges. Let 
+
+[𝑦 𝑚𝑖𝑛  
+
+> (⋅)
+
+, 𝑦 𝑚𝑎𝑥  
+
+> (⋅)
+
+] denote the acceptable ranges for CO 2, tempera-ture, and relative humidity. For each variable, the instanta-neous violation is defined as 
+
+𝑣 (⋅)(𝑡 ) = max (0, 𝑦 (⋅)(𝑡 )− 𝑦 𝑚𝑎𝑥 
+
+> (⋅)
+
+)+max (0, 𝑦 𝑚𝑖𝑛  
+
+> (⋅)
+
+−𝑦 (⋅)(𝑡 )), (9) The instantaneous constraint cost is then defined as a weighted sum of the individual violations: 
+
+𝑐 𝑡 = 𝑤 𝐶𝑂 2 𝑣 𝐶𝑂 2(𝑡 )+ 𝑤 low  
+
+> 𝑇
+
+𝑣 low  
+
+> 𝑇
+
+(𝑡 )+ 𝑤 high  
+
+> 𝑇
+
+𝑣 high  
+
+> 𝑇
+
+(𝑡 )+ 𝑤 𝑅𝐻 𝑣 𝑅𝐻 (𝑡 ),
+
+(10) where 𝑤 𝐶𝑂 2, 𝑤 low  
+
+> 𝑇
+
+, 𝑤 high  
+
+> 𝑇
+
+, and 𝑤 𝑅𝐻 are fixed normalization constants adopted unchanged from the greenhouse model of van Laatum et al[42]. They map violations of different phys-ical quantities (ppm, °C, %) onto a comparable scale, with distinct coefficients for lower- and upper-bound temperature violations, and are shared by the baseline and the proposed controller. In fixed-penalty RL the overall penalty scale must be chosen manually; here it is represented by the Lagrange multiplier 𝜆 , which is updated online (Section 3.2). The expected cumulative violation under policy 𝜋 is 
+
+𝐽 𝑐 (𝜋 ) = 𝔼 𝜋 
+
+[𝑇 −1 ∑
+
+> 𝑡 =0
+
+𝛾 𝑡 𝑐 𝑡 
+
+]
+
+, (11) which aggregates both the magnitude and duration of con-straint violations.   
+
+> Liu and Fan et al.: Preprint submitted to Elsevier Page 5 of 12 Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control
+
+CMDP objective. The CMDP objective is to maximize the expected cumulative reward while limiting the cumulative violation: 
+
+max  
+
+> 𝜋
+
+𝐽 𝑟 (𝜋 ) = 𝔼 𝜋 
+
+[𝑇 −1 ∑
+
+> 𝑡 =0
+
+𝛾 𝑡 𝑟 𝑡 
+
+]
+
+,
+
+s.t. 𝐽 𝑐 (𝜋 ) ≤ 𝑑, 
+
+(12) where 𝑑 represents a user-defined violation budget that limits the allowable long-horizon climate deviation. 
+
+3.2. RCPO-based controller implementation 
+
+In this work, we instantiate the CMDP with a single aggregate constraint cost 𝐽 𝑐 = 𝔼 [∑𝑡 𝛾 𝑡 𝑐 𝑡 ] ≤ 𝑑 , so a single multiplier 𝜆 is maintained. The CMDP formulation introduced above is solved using Reward Constrained Policy Optimization, with Proximal Policy Optimization serving as the policy optimization back-bone. RCPO converts the constrained optimization problem into a Lagrangian formulation while maintaining compati-bility with standard actor–critic reinforcement learning al-gorithms. This makes it particularly convenient to integrate with PPO without requiring major modifications to the un-derlying policy optimization framework. Specifically, the CMDP objective is transformed into the following Lagrangian function: 
+
+(𝜋, 𝜆 ) = 𝐽 𝑟 (𝜋 ) − 𝜆 (𝐽 𝑐 (𝜋 ) − 𝑑 ), (13) where 𝐽 𝑟 (𝜋 ) and 𝐽 𝑐 (𝜋 ) denote the expected cumulative re-ward and constraint cost under policy 𝜋 , respectively. The nonnegative multiplier 𝜆 ≥ 0 balances the trade-off between economic profit and climate regulation safety. In practice, optimizing the Lagrangian objective is equiv-alent to using a penalized reward signal ̃𝑟 𝑡 = 𝑟 𝑡 − 𝜆𝑐 𝑡 , (14) which dynamically penalizes climate constraint violations according to the current multiplier value. In this formulation, the actor and critic are trained using the penalized reward signal, while the constraint evaluation used to update the multiplier is computed from the original constraint cost. During training, the policy parameters are optimized using PPO to maximize the Lagrangian objective through policy gradient updates based on the modified reward signal ̃𝑟 𝑡 . Meanwhile, the Lagrange multiplier is updated every 
+
+𝐾 = 4 training episodes according to 
+
+𝜆 ← [𝜆 + 𝛼 𝜆 (𝐽 𝑐 (𝜋 ) − 𝑑 )]
+
+> +
+
+, (15) where 𝛼 𝜆 denotes the multiplier learning rate and [⋅]+ repre-sents projection onto the nonnegative orthant. This procedure can be interpreted as a primal–dual opti-mization process in which the policy parameters are updated to maximize the Lagrangian objective, while the multiplier adapts to enforce the cumulative violation constraint. Such an adaptive penalty mechanism avoids the need for manually tuning fixed penalty coefficients and enables explicit regula-tion of long-horizon climate violations.                       
+
+> Table 2
+> Network and implementation settings of the KAN-based actor and critic networks. Item Value Observation dimension 𝑛 obs 62
+> KAN layers (actor) 3: [62 ,128 ,128 ,128]
+> KAN layers (critic) 3: [62 ,128 ,128 ,128]
+> Spline order 𝑘 3Grid size 3Grid range [−1 ,1]
+> Base function SiLU Actor/critic hidden width Identical ( 128 )Optimizer Adam Learning rate 1 × 10 −4
+
+3.3. Policy Representation and Observation Design 
+
+3.3.1. KAN-based policy and value networks 
+
+In standard implementations of PPO, the policy and value functions are typically parameterized using multi-layer perceptrons (MLPs). Although MLPs are widely used due to their simplicity and general approximation capability, their node-based activation structure may limit representation efficiency when modeling highly nonlinear control dynamics such as those present in greenhouse climate systems. To improve the expressiveness of the policy represen-tation, the MLP-based networks in PPO are replaced with Kolmogorov–Arnold Networks . KAN is a recently proposed neural network architecture in which nonlinear transforma-tions are modeled by learnable functions on network edges rather than fixed activation functions on nodes. According to the Kolmogorov–Arnold representation theorem, multi-variate functions can be decomposed into compositions of univariate functions, which provides the theoretical basis for the KAN architecture [33]. Within the PPO framework, the overall actor–critic structure remains unchanged. The observation vector 𝑠 𝑡 is directly fed into the neural network, and the policy network outputs the action distribution 𝜋 (𝑎 𝑡 |𝑠 𝑡 ) while the value network estimates the state value 𝑉 (𝑠 𝑡 ). The difference from the standard PPO implementation lies in the function approximator: the conventional MLP networks used for the policy and value functions are replaced by KAN networks with identical input and output interfaces. This replacement allows the reinforcement learning agent to utilize KAN’s flexible nonlinear function represen-tation while preserving the original PPO training procedure. Consequently, the policy optimization, value estimation, and RCPO-based constraint handling remain unchanged, while the expressive capacity of the neural function approximator is enhanced. To facilitate reproduction, Table 2 summarizes the net-work architecture and implementation settings of the KAN-based policy and value networks.   
+
+> Liu and Fan et al.: Preprint submitted to Elsevier Page 6 of 12 Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control
+
+3.3.2. Time feature encoding 
+
+Greenhouse climate dynamics exhibit strong diurnal pat-terns due to periodic variations in solar radiation, outdoor temperature, and operational schedules. To allow the policy to account for these time-dependent dynamics, explicit time information is incorporated into the observation vector. Specifically, the time of day is encoded using sinusoidal functions to represent its cyclic nature: 
+
+𝑡 𝑠𝑖𝑛 = sin 
+
+( 2𝜋𝑡 𝑇 𝑑𝑎𝑦 
+
+)
+
+, 𝑡 𝑐𝑜𝑠 = cos 
+
+( 2𝜋𝑡 𝑇 𝑑𝑎𝑦 
+
+)
+
+, (16) where 𝑡 denotes the current time step and 𝑇 𝑑𝑎𝑦 corresponds to the length of one day in the simulation. The resulting features (𝑡 𝑠𝑖𝑛 , 𝑡 𝑐𝑜𝑠 ) are appended to the observation vector and provided as additional inputs to the policy and value networks. This cyclic encoding enables the reinforcement learning agent to capture periodic environ-mental dynamics while avoiding discontinuities associated with raw time representations. 
+
+## 4. Experimental Setup 
+
+4.1. Simulation environment 
+
+All experiments were conducted in simulation using a nonlinear greenhouse–crop dynamic model for winter let-tuce production originally proposed by [35]. The model describes the coupled dynamics between crop biomass ac-cumulation and greenhouse climate, including indoor CO 2
+
+concentration, air temperature, and humidity, under the in-fluence of control actions and exogenous weather distur-bances. To account for model mismatch and biological vari-ability, parametric uncertainty was explicitly introduced by perturbing the nominal model parameters with a relative un-certainty level of 2.5% . Specifically, Parametric uncertainty was applied to all 28 model parameters; at every control step each parameter was resampled independently from a uniform distribution around its nominal value with a total relative range of ±2 .5% , using a seeded RNG. The continuous-time greenhouse model was discretized using a fourth-order Runge–Kutta method with a fixed sam-pling time of Δ𝑡 = 30 min, resulting in a discrete-time non-linear state–space system used for both controller training and evaluation. The reinforcement learning agent observes the state vec-tor defined in Section 3, which includes greenhouse mea-surements (crop dry-weight, indoor CO 2 concentration, in-door air temperature, and relative humidity), previous con-trol inputs, weather forecasts, and time features. The agent applies three control inputs: CO 2 injection, ventilation rate, and heating power. 
+
+Economic parameters and constraint coefficients. The economic reward and climate-violation cost are parameter-ized using the coefficients summarized in Table 3. These include crop price, energy costs, and weighting coefficients used to quantify cumulative constraint violations. 
+
+Climate and control constraints. The acceptable oper-ating ranges for climate variables and the allowable control input ranges are summarized in Table 4. These bounds define the target crop-suitable operating region and are used to compute the cumulative violation cost in the CMDP formu-lation. Weather disturbances were provided to the simulator as exogenous time-series inputs, including global solar ra-diation, outdoor CO 2 concentration, outdoor air tempera-ture, and outdoor humidity. The weather data were taken from real-world measurements recorded at Bleiswijk, The Netherlands, starting on February 9, 2014, and covering a continuous cultivation period of 40 days. The nominal weather data were the same for all con-trollers. Nevertheless, as they represent exogenous distur-bances, white noise with a standard deviation of 0.3 was added to generate a different perturbed weather profile in each training episode and evaluation run, thereby exposing the policies to a wider range of weather conditions. The nom-inal data and the noise level were identical for all controllers to ensure a fair comparison [21]. 
+
+4.2. Training and hyperparameter settings 
+
+Proximal Policy Optimization was adopted as the policy optimization backbone for all reinforcement learning con-trollers, with the underlying algorithms and training work-flows implemented utilizing the Stable-Baselines3 frame-work [43]. The PPO hyperparameters were kept identical across experiments and are summarized in Table 5. To enforce the long-horizon climate constraint, PPO was augmented with Reward Constrained Policy Optimization, which introduces a Lagrange multiplier to regulate the trade-off between economic performance and cumulative climate-violation cost. The RCPO-specific settings are listed in Ta-ble 6. 
+
+## 5. Results and Discussion 
+
+5.1. Main performance comparison 
+
+The closed-loop performance of the proposed RCPO-PPO controller is quantitatively compared with the baseline penalty-based PPO controller. Economic performance is evaluated using cumulative profit, while safety performance is measured by the cumulative climate-violation cost defined in Section 3. Both controllers are evaluated under identical greenhouse dynamics, weather disturbances, and training settings. As shown in Table 7, the proposed RCPO-PPO con-troller achieves a clear reduction in cumulative climate vio-lations while improving economic performance. Compared with the baseline PPO controller, the cumulative violation cost is reduced by approximately 18 .65% , indicating a sub-stantially improved ability to regulate long-horizon climate constraint violations. At the same time, the cumulative profit increases by approximately 2.91% , indicating that improved safety per-formance is achieved without sacrificing economic return. These results indicate that the CMDP-based formulation   
+
+> Liu and Fan et al.: Preprint submitted to Elsevier Page 7 of 12
+
+Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control 
+
+Table 3 
+
+Economic parameters and constraint cost coefficients. Variable Value Unit Description 
+
+𝑐 𝐶𝑂 2 0.1906 €/kg CO 2 price coefficient 
+
+𝑐 ℎ𝑒𝑎𝑡 0.1281 €/kWh Heating price coefficient 
+
+𝑐 𝐷𝑊 22.29 €/kg Crop dry-weight price 
+
+𝜆 𝐶𝑂 2 5 × 10 −5 – Weight for CO 2 violations 
+
+𝜆 min  
+
+> 𝑇
+
+3 × 10 −3 – Weight for lower temperature violations 
+
+𝜆 max  
+
+> 𝑇
+
+5 × 10 −3 – Weight for upper temperature violations 
+
+𝜆 𝑅𝐻 7 × 10 −4 – Weight for humidity violations 
+
+Table 4 
+
+Climate variable ranges and control input limits. Variable Lower Upper Unit 
+
+Climate variables 
+
+𝑦 𝐶𝑂 2 500 1600 ppm 
+
+𝑦 𝑇 10 20 ◦C
+
+𝑦 𝑅𝐻 0 80 %
+
+Control inputs 
+
+𝑢 𝐶𝑂 2 0 1.2 mg/m 2/s 
+
+𝑢 ℎ𝑒𝑎𝑡 0 150 W/m 2
+
+𝑢 𝑣𝑒𝑛𝑡 0 7.5 m/m/s 
+
+Table 5 
+
+PPO hyperparameters used in the experiments. Hyperparameter Value Total training timesteps 4 × 10 6
+
+Number of parallel environments ( 𝑛 envs ) 8
+
+Rollout length ( 𝑛 steps ) 1920 
+
+Batch size 1920 
+
+Optimization epochs per update 10 
+
+Discount factor ( 𝛾 ) 0.98 
+
+GAE parameter ( 𝜆 GAE ) 0.95 
+
+Clipping range 0.1
+
+Entropy coefficient 0.01 
+
+Value function coefficient 0.5
+
+Maximum gradient norm 0.5
+
+Table 6 
+
+RCPO hyperparameters for constraint regulation. Hyperparameter Symbol Value Initial penalty coefficient 𝜆 0 1.0
+
+Minimum penalty coefficient 𝜆 min 0.05 
+
+Maximum penalty coefficient 𝜆 max 50 .0
+
+Constraint threshold 𝑑 0.7
+
+Penalty update interval (episodes) 𝐾 4
+
+Penalty learning rate 𝛼 𝜆 0.01 
+
+allows the controller to regulate cumulative violations near the predefined threshold rather than relying on heuristic penalty tuning. Taken together, the experimental results show that the proposed approach successfully achieves the desired trade-off between economic performance and climate regulation safety: cumulative violations are effectively regulated near the specified limit, while economic profit is improved. 
+
+Figure 3: Ablation study on policy representation enhance-ments. Training performance comparison between baseline PPO, PPO with cyclic time features, and PPO with KAN-based policy networks. All methods are trained without RCPO constraint regulation. 
+
+5.2. Ablation study on policy representation enhancements 
+
+To evaluate the contribution of the proposed representa-tion improvements, an ablation study was conducted before introducing the RCPO safety constraint mechanism. In this experiment, three controller configurations were compared under identical training conditions: the baseline PPO con-troller, PPO augmented with cyclic time features, and PPO using both time features and KAN-based policy networks. All controllers were trained using the same reward for-mulation without constraint regulation, allowing the impact of the proposed representation enhancements to be isolated from the safe reinforcement learning component. The aver-age episodic return during training is shown in Fig. 3. As illustrated in Fig. 3, incorporating cyclic time fea-tures improves the training performance compared with the baseline PPO controller. This improvement is attributed to the ability of the time encoding to capture the strong diurnal patterns present in greenhouse climate dynamics. Furthermore, replacing the conventional MLP policy network with a KAN-based architecture leads to additional performance gains. The KAN-based controller achieves both faster convergence during the early training stage and a higher final average return. 
+
+Liu and Fan et al.: Preprint submitted to Elsevier Page 8 of 12 Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control                                               
+
+> Table 7
+> Performance comparison under different controller configurations. Method Cumulative profit ΔProfit (%) Cumulative violation ΔViolation (%) PPO (baseline) 3.782 (±0 .146 )– ( ±3 .86 )0.858 (±0 .027 )– ( ±3 .15 )RCPO w/o KAN & Time 3.543 (±0 .061 )−6 .32 (±1 .72 )0.695 (±0 .026 )−19 .00 (±3 .74 )RCPO w/o Time 3.635 (±0 .064 )−3 .89 (±1 .76 )0.712 (±0 .039 )−17 .02 (±5 .48 )RCPO w/o KAN 3.755 (±0 .165 )−0 .71 (±4 .39 )0.710 (±0 .025 )−17 .25 (±3 .52 )KAN-RCPO-PPO 3.892 (±0 .147 )+2 .91 (±3 .78 )0.698 (±0 .029 )−18 .65 (±4 .15 )
+> Figure 4: Normalized cumulative climate constraint violations for different climate variables achieved by the proposed RCPO-PPO controller relative to the baseline PPO controller. The baseline PPO result is normalized to 100% .
+
+Overall, the results demonstrate that the proposed repre-sentation enhancements—time feature encoding and KAN-based policy approximation—significantly improve the learn-ing capability of the reinforcement learning controller. These improvements provide a stronger policy representation foun-dation before introducing the RCPO-based safety constraint mechanism. 
+
+5.3. Reduction in climate constraint violations by variable 
+
+To further examine how the proposed controller im-proves safety performance, the cumulative constraint viola-tions are decomposed into three climate variables: relative humidity, air temperature, and indoor CO 2 concentration. The normalized cumulative violations achieved by the pro-posed RCPO-PPO controller relative to the baseline PPO controller are shown in Fig. 4. As illustrated in Fig. 4, the largest improvement is ob-served in humidity regulation, where the cumulative viola-tion is reduced by 20 .3% . The cumulative CO 2 violation is reduced by 15 .6% , while the cumulative temperature viola-tion is reduced by 9.2% . These results indicate that the pro-posed safe reinforcement learning framework consistently reduces constraint violations across all climate variables, with the strongest improvement observed for relative humid-ity. From a practical greenhouse management perspective, excessive humidity is associated with conditions conducive to condensation and disease. Therefore, the observed im-provement suggests that the proposed controller may reduce     
+
+> Figure 5: Normalized cumulative operation costs associated with heating and CO 2input achieved by the proposed RCPO-PPO controller relative to the baseline PPO controller. The baseline PPO result is normalized to 100% .
+
+conditions associated with such risks, but disease incidence itself is not modeled in this study. 
+
+5.4. Reduction in heating and CO 2 input usage 
+
+Besides improving climate regulation safety, the pro-posed controller also affects resource consumption. To eval-uate this aspect, the cumulative operation costs associated with heating and CO 2 input are compared with those of the baseline PPO controller. The corresponding normalized costs are shown in Fig. 5. As shown in Fig. 5, the proposed controller reduces the cumulative CO 2 input cost by 22 .5% and the cumu-lative heating cost by 5.4% relative to the baseline PPO controller. When both cost components are combined, the total operation cost is reduced by 8.8% . These reductions indicate that improved safety performance is not achieved through excessive actuator usage. Instead, the controller is able to regulate the greenhouse climate more efficiently while lowering resource consumption. This trend aligns well with the profit improvement re-ported in Table 7. Since heating and CO 2 enrichment are the main economic costs in the reward function, their reduced usage directly contributes to improved economic perfor-mance. Overall, the proposed method achieves a favorable balance between climate safety, control efficiency, and oper-ational profitability. 
+
+## 6. Conclusion and Future Work 
+
+This work develops a safe reinforcement learning frame-work for greenhouse climate control to explicitly balance   
+
+> Liu and Fan et al.: Preprint submitted to Elsevier Page 9 of 12 Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control
+
+economic performance and long-term climate regulation safety. The greenhouse control task is cast into a Constrained Markov Decision Process formulation with explicit cumula-tive constraints imposed on cumulative climate violations. To solve the resulting CMDP, a Reward Constrained Policy Optimization approach is adopted, enabling direct regulation of long-horizon constraint violations through an adaptive Lagrange multiplier. In addition, the policy repre-sentation is enhanced by incorporating Kolmogorov–Arnold Networks and cyclic time features, which improve the ability of the controller to capture nonlinear greenhouse dynamics and diurnal patterns. Simulation results based on a standard lettuce green-house model demonstrate that the proposed method effec-tively reduces cumulative climate violations by approxi-mately 18 .65% while increasing economic profit by about 
+
+2.91% compared with a penalty-based PPO baseline. Fur-ther analysis shows that RCPO is primarily responsible for enforcing constraint satisfaction, whereas KAN-based policy networks and time feature encoding contribute to improved economic performance. Additional results on in-dividual climate variables and resource usage indicate that the proposed controller achieves significant reductions in humidity-related violations and decreases heating and CO 2
+
+input usage, realizing efficient and reliable greenhouse oper-ation with a controllable trade-off between profitability and operational safety. Future work will focus on extending the proposed method to more diverse crop types and seasonal conditions, as well as validating the approach in real-world greenhouse environ-ments. In addition, integrating more advanced safe reinforce-ment learning algorithms and incorporating uncertainty-aware decision-making may further improve robustness and practical applicability. 
+
+## Appendix A. Lettuce Greenhouse Model 
+
+This appendix provides the continuous-time nonlinear lettuce greenhouse model used in this study. The model is adapted from [35] and is consistent with the state, input, output, and disturbance definitions introduced in Section 2.1. The discrete-time model used in controller training and eval-uation is obtained by discretizing the following continuous-time system with the fourth-order Runge–Kutta method using a sampling time Δ𝑡 = 30 min. 
+
+State, input, output, and disturbance variables 
+
+The state, input, disturbance, and output vectors are defined as 
+
+𝑥 (𝑡 ) = [ 𝑥 1(𝑡 ), 𝑥 2(𝑡 ), 𝑥 3(𝑡 ), 𝑥 4(𝑡 )] ⊤,𝑢 (𝑡 ) = [ 𝑢 1(𝑡 ), 𝑢 2(𝑡 ), 𝑢 3(𝑡 )] ⊤,𝑑 (𝑡 ) = [ 𝑑 1(𝑡 ), 𝑑 2(𝑡 ), 𝑑 3(𝑡 ), 𝑑 4(𝑡 )] ⊤,𝑦 (𝑡 ) = [ 𝑦 1(𝑡 ), 𝑦 2(𝑡 ), 𝑦 3(𝑡 ), 𝑦 4(𝑡 )] ⊤.
+
+(17) Here, 𝑥 (𝑡 ) denotes the greenhouse–crop state vector, 𝑢 (𝑡 )
+
+denotes the control input vector, 𝑑 (𝑡 ) denotes the weather disturbance vector, and 𝑦 (𝑡 ) denotes the measurable output vector. The detailed physical meanings of these variables are given in Table 1. 
+
+Continuous-time dynamics 
+
+The continuous-time greenhouse model is given by ̇𝑥 1(𝑡 ) = 𝑝 1𝜙 phot ,𝑐 (𝑡 ) − 𝑝 2𝑥 1(𝑡 ) 2 𝑥 3(𝑡 )∕10−5∕2 , (18) ̇𝑥 2(𝑡 ) = 1
+
+𝑝 9
+
+(
+
+− 𝜙 phot ,𝑐 (𝑡 ) + 𝑝 10 𝑥 1(𝑡 ) 2 𝑥 3(𝑡 )∕10−5∕2 
+
++ 10 −6 𝑢 1(𝑡 ) − 𝜙 vent ,𝑐 (𝑡 )
+
+)
+
+,
+
+(19) ̇𝑥 3(𝑡 ) = 1
+
+𝑝 16 
+
+(
+
+𝑢 3(𝑡 ) − (10 −3 𝑝 17 𝑢 2(𝑡 ) + 𝑝 18 
+
+)
+
+× (𝑥 3(𝑡 ) − 𝑑 3(𝑡 )) + 𝑝 19 𝑑 1(𝑡 )
+
+)
+
+,
+
+(20) ̇𝑥 4(𝑡 ) = 1
+
+𝑝 20 
+
+(𝜙 transp ,ℎ (𝑡 ) − 𝜙 vent ,ℎ (𝑡 )) . (21) 
+
+Measurement equations 
+
+The measurable outputs are defined as 
+
+𝑦 1(𝑡 ) = 10 3𝑥 1(𝑡 ), (22) 
+
+𝑦 2(𝑡 ) = 10 3𝑥 2(𝑡 ) 𝑝 12 
+
+(𝑥 3(𝑡 ) + 𝑝 13 
+
+)
+
+𝑝 14 𝑝 15 
+
+, (23) 
+
+𝑦 3(𝑡 ) = 𝑥 3(𝑡 ), (24) 
+
+𝑦 4(𝑡 ) = 10 2
+
+11 𝑥 4(𝑡 ) 𝑝 12 
+
+(𝑥 3(𝑡 ) + 𝑝 13 
+
+) exp 
+
+( 𝑝 27 𝑥 3(𝑡 )
+
+𝑥 3(𝑡 ) + 𝑝 28 
+
+)
+
+.
+
+(25) 
+
+Auxiliary flux terms 
+
+The gross canopy photosynthesis rate is 
+
+𝜙 phot ,𝑐 (𝑡 ) = 
+
+(1 − exp (−𝑝 3𝑥 1(𝑡 ))) 𝑝 4𝑑 1(𝑡 )
+
+𝜑 (𝑡 )× (−𝑝 5𝑥 23(𝑡 ) + 𝑝 6𝑥 3(𝑡 ) − 𝑝 7
+
+) ( 𝑥 2(𝑡 ) − 𝑝 8
+
+) .
+
+(26) The auxiliary denominator is defined as 
+
+𝜑 (𝑡 ) = 𝑝 4𝑑 1(𝑡 )+ (−𝑝 5𝑥 23(𝑡 ) + 𝑝 6𝑥 3(𝑡 ) − 𝑝 7
+
+) ( 𝑥 2(𝑡 ) − 𝑝 8
+
+) . (27) The CO 2 exchange through ventilation is 
+
+𝜙 vent ,𝑐 (𝑡 ) = (10 −3 𝑢 2(𝑡 ) + 𝑝 11 
+
+) ( 𝑥 2(𝑡 ) − 𝑑 2(𝑡 )) . (28)   
+
+> Liu and Fan et al.: Preprint submitted to Elsevier Page 10 of 12
+
+Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control 
+
+Table 8 
+
+Nominal parameter values of the lettuce greenhouse model. 
+
+Parameter Value Parameter Value Parameter Value 
+
+𝑝 1 0.544 𝑝 11 7.50 × 10 −6 𝑝 21 3.60 × 10 −3 
+
+𝑝 2 2.65 × 10 −7 𝑝 12 8.31 𝑝 22 9348 
+
+𝑝 3 53 𝑝 13 273.15 𝑝 23 8314 
+
+𝑝 4 3.55 × 10 −9 𝑝 14 101325 𝑝 24 273.15 
+
+𝑝 5 5.11 × 10 −6 𝑝 15 0.044 𝑝 25 17.4 
+
+𝑝 6 2.30 × 10 −4 𝑝 16 3.00 × 10 4 𝑝 26 239 
+
+𝑝 7 6.29 × 10 −4 𝑝 17 1290 𝑝 27 17.269 
+
+𝑝 8 5.20 × 10 −5 𝑝 18 6.1 𝑝 28 238.3 
+
+𝑝 9 4.1 𝑝 19 0.2 
+
+𝑝 10 4.87 × 10 −7 𝑝 20 4.1 
+
+The canopy transpiration term is 
+
+𝜙 transp ,ℎ (𝑡 ) = 𝑝 21 
+
+(1 − exp (−𝑝 3𝑥 1(𝑡 ))) 
+
+×
+
+[ 𝑝 22 
+
+𝑝 23 
+
+(𝑥 3(𝑡 ) + 𝑝 24 
+
+) exp 
+
+( 𝑝 25 𝑥 3(𝑡 )
+
+𝑥 3(𝑡 ) + 𝑝 26 
+
+)
+
+− 𝑥 4(𝑡 )
+
+]
+
+.
+
+(29) The humidity exchange through ventilation is 
+
+𝜙 vent ,ℎ (𝑡 ) = (10 −3 𝑢 2(𝑡 ) + 𝑝 11 
+
+) ( 𝑥 4(𝑡 ) − 𝑑 4(𝑡 )) . (30) 
+
+Model parameters 
+
+The parameter vector is 
+
+𝑝 = [𝑝 1 𝑝 2 ⋯ 𝑝 28 
+
+]⊤ . (31) The nominal parameter values used in the greenhouse model are listed in Table 8. 
+
+Remark on discretization 
+
+For controller design, the above continuous-time model is discretized into the nonlinear state-space form 
+
+𝑥 (𝑘 + 1) = 𝑓 (𝑥 (𝑘 ), 𝑢 (𝑘 ), 𝑑 (𝑘 ), 𝑝 ),𝑦 (𝑘 ) = 𝑔 (𝑥 (𝑘 ), 𝑝 ), (32) using a fourth-order Runge–Kutta scheme with sampling interval Δ𝑡 = 30 min. 
+
+## References 
+
+[1] A Badji, A Benseddik, H Bensaha, A Boukhelifa, and I Hasrane. De-sign, technology, and management of greenhouse: A review. Journal of Cleaner Production , 373:133753, 2022. [2] Ajwal Dsouza, Lenore Newman, Thomas Graham, and Evan DG Fraser. Exploring the landscape of controlled environment agriculture research: A systematic scoping review of trends and topics. Agricul-tural Systems , 209:103673, 2023. [3] Christos Vatistas, Dafni Despoina Avgoustaki, and Thomas Bartzanas. A systematic literature review on controlled-environment agriculture: How vertical farms and greenhouses can influence the sustainability and footprint of urban microclimate with local food production. Atmosphere , 13(8):1258, 2022. [4] Juping Ding, Xiaocong Jiao, Ping Bai, Yixin Hu, Jiayu Zhang, and Jianming Li. Effect of vapor pressure deficit on the photosynthesis, growth, and nutrient absorption of tomato seedlings. Scientia Horti-culturae , 293:110736, 2022. [5] Hans-Juergen Tantau and Doris Lange. Greenhouse climate control: an approach for integrated pest management. Computers and Elec-tronics in Agriculture , 40(1-3):141–152, 2003. [6] Farzaneh Rezaei, Vanessa Burg, Stephan Pfister, Stefanie Hellweg, and Ramin Roshandel. Optimization framework of clean heat and co2 supply for agricultural greenhouses exploiting industrial symbiosis. 
+
+Energy Strategy Reviews , 55:101509, 2024. [7] Fatima-Zahra Lahlou, Farhat Mahmood, and Tareq Al-Ansari. Eco-nomic assessment of greenhouse and vertical farm production systems in arid regions: a case study of qatar. Cleaner and Circular Bioecon-omy , page 100151, 2025. [8] Joaqun Caadas, Jorge Antonio Sanchez-Molina, Francisco Rodrguez, and Isabel Mara delguila. Improving automatic climate control with decision support techniques to minimize disease effects in greenhouse tomatoes. Information Processing in Agriculture , 4(1):50–63, 2017. [9] Songwei Zeng, Haigen Hu, Lihong Xu, and Guanghui Li. Nonlinear adaptive pid control for greenhouse environment based on rbf net-work. Sensors , 12(5):5328–5348, 2012. [10] Farhat Mahmood, Rajesh Govindan, Amine Bermak, David Yang, and Tareq Al-Ansari. Data-driven robust model predictive control for greenhouse temperature control and energy utilisation assessment. 
+
+Applied Energy , 343:121190, 2023. [11] Carlos E Garcia, David M Prett, and Manfred Morari. Model predictive control: Theory and practice—a survey. Automatica , 25 (3):335–348, 1989. [12] Gerrit Van Straten, Gerard van Willigenburg, Eldert van Henten, and Rachel van Ooteghem. Optimal control of greenhouse cultivation .CRC press, 2010. [13] Chunhu Wang, Matthew Tom Harrison, Hamish Brown, Yongliang Qiao, Xiaogang Yin, Rui Yang, Yunbo Zhang, Meixue Zhou, and Ke Liu. Global sensitivity analyses prior to parameter calibration significantly improves prediction quality. Computers and Electronics in Agriculture , 238:110750, 2025. [14] Richard S Sutton, Andrew G Barto, et al. Reinforcement learning: An introduction , volume 1. MIT press Cambridge, 1998. [15] Baohua Zhang and Yongliang Qiao. Ai, sensors, and robotics for smart agriculture, 2024. [16] Lu Wang, Xiaofeng He, and Dijun Luo. Deep reinforcement learning for greenhouse climate control. In 2020 IEEE International Confer-ence on Knowledge Graph (ICKG) , pages 474–480. IEEE, 2020. [17] Maxiu Xiao, Jianglin Lan, Jingxin Yu, Weihong Ma, Qiuju Xie, and Congcong Sun. Grower-in-the-loop interactive reinforcement learning for greenhouse climate control. Computers and Electronics in Agriculture , 242:111312, 2026. [18] Yunpu Zheng, Fei Li, Lihua Hao, Jingjin Yu, Lili Guo, Haoran Zhou, Chao Ma, Xixi Zhang, and Ming Xu. Elevated co2 concentration in-duces photosynthetic down-regulation with changes in leaf structure, non-structural carbohydrates and nitrogen content of soybean. BMC plant biology , 19(1):255, 2019. [19] Abdulmujib G Yusuf, Fahad A Al-Yahya, Amgad A Saleh, and Ahmed M Abdel-Ghany. Optimizing greenhouse microclimate for plant pathology: challenges and cooling solutions for pathogen control in arid regions. Frontiers in Plant Science , 16:1492760, 2025. 
+
+Liu and Fan et al.: Preprint submitted to Elsevier Page 11 of 12 Lagrangian-Constrained PPO with KAN for Greenhouse Safe Control 
+
+[20] Caitlin E Moore, Katherine Meacham-Hensold, Pauline Lemonnier, Rebecca A Slattery, Claire Benjamin, Carl J Bernacchi, Tracy Law-son, and Amanda P Cavanagh. The effect of increasing temperature on crop photosynthesis: from enzymes to ecosystems. Journal of experimental botany , 72(8):2822–2844, 2021. [21] Bernardo Morcego, Wenjie Yin, Sjoerd Boersma, Eldert Van Henten, Vicenç Puig, and Congcong Sun. Reinforcement learning versus model predictive control on greenhouse climate control. Computers and Electronics in Agriculture , 215:108372, 2023. [22] Samuel Mallick, Filippo Airaldi, Azita Dabiri, Congcong Sun, and Bart De Schutter. Reinforcement learning-based model predictive control for greenhouse climate control. Smart Agricultural Technol-ogy , 10:100751, 2025. [23] Geraud Nangue Tasse, Tamlin Love, Mark Nemecek, Steven James, and Benjamin Rosman. Rosarl: Reward-only safe reinforcement learning. arXiv preprint arXiv:2306.00035 , 2023. [24] Kaustubh Mani, Vincent Mai, Charlie Gauthier, Annie Chen, Samer Nashed, and Liam Paull. Safety representations for safer policy learning. arXiv preprint arXiv:2502.20341 , 2025. [25] Linrui Zhang, Li Shen, Long Yang, Shixiang Chen, Bo Yuan, Xueqian Wang, and Dacheng Tao. Penalized proximal policy optimization for safe reinforcement learning. arXiv preprint arXiv:2205.11814 , 2022. [26] Shangding Gu, Alap Kshirsagar, Yali Du, Guang Chen, Jan Peters, and Alois Knoll. A human-centered safe robot reinforcement learning framework with interactive behaviors. Frontiers in Neurorobotics , 17: 1280341, 2023. [27] Lu Wen, Jingliang Duan, Shengbo Eben Li, Shaobing Xu, and Huei Peng. Safe reinforcement learning for autonomous vehicles through parallel constrained policy optimization. In 2020 IEEE 23rd Interna-tional Conference on Intelligent Transportation Systems (ITSC) , pages 1–7. IEEE, 2020. [28] Yi Zhou, Liangcai Zhou, Di Shi, and Xiaoying Zhao. Coordinated frequency control through safe reinforcement learning. In 2022 IEEE Power & Energy Society General Meeting (PESGM) , pages 1–5. IEEE, 2022. [29] Akifumi Wachi and Yanan Sui. Safe reinforcement learning in constrained markov decision processes. In International Conference on Machine Learning , pages 9797–9806. PMLR, 2020. [30] Ankita Kushwaha, Kiran Ravish, Preeti Lamba, and Pawan Kumar. A survey of safe reinforcement learning and constrained mdps: A tech-nical survey on single-agent and multi-agent safety. arXiv preprint arXiv:2505.17342 , 2025. [31] Eitan Altman. Constrained Markov decision processes . Routledge, 2021. [32] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347 , 2017. [33] Ziming Liu, Yixuan Wang, Sachin Vaidya, Fabian Ruehle, James Halverson, Marin Soljačić, Thomas Y Hou, and Max Tegmark. Kan: Kolmogorov-arnold networks. arXiv preprint arXiv:2404.19756 ,2024. [34] Victor A Kich, Jair A Bottega, Raul Steinmetz, Ricardo B Grando, Ayano Yorozu, and Akihisa Ohya. Kolmogorov-arnold networks for online reinforcement learning. In 2024 24th International Conference on Control, Automation and Systems (ICCAS) , pages 958–963. IEEE, 2024. [35] EJ Van Henten. Greenhouse climate management: an optimal control approach . Wageningen University and Research, 1994. [36] Martin L Puterman. Markov decision processes: discrete stochastic dynamic programming . John Wiley & Sons, 2014. [37] Joshua Achiam, David Held, Aviv Tamar, and Pieter Abbeel. Con-strained policy optimization. In International Conference on Machine Learning (ICML) , 2017. [38] Alex Ray, Joshua Achiam, and Dario Amodei. Benchmarking safe exploration in deep reinforcement learning. arXiv preprint arXiv:1910.01708 , 2019. [39] Dhruv Singh Kushwaha and Zoleikha Abdollahi Biron. A review on safe reinforcement learning using lyapunov and barrier functions. 
+
+arXiv preprint arXiv:2508.09128 , 2025. [40] Chen Tessler, Daniel J Mankowitz, and Shie Mannor. Reward constrained policy optimization. arXiv preprint arXiv:1805.11074 ,2018. [41] Yuhan Wu, Xiyu Meng, Zehao Liu, Yuhua Zhou, Junru Zhang, Pengfei Jiao, Canran Xiao, Yabo Dong, and Dongming Lu. Adakan: Kolmogorov-arnold networks with adaptive spectral decomposition for time series forecasting. 2025. [42] Bart Van Laatum, Salim Msaad, Eldert J Van Henten, Robert D Mcallister, and Sjoerd Boersma. Stochastic model predictive control with reinforcement learning for greenhouse production systems under parametric uncertainty. Control Engineering Practice , 169:106787, 2026. [43] Antonin Raffin, Ashley Hill, Adam Gleave, Anssi Kanervisto, Maxi-milian Ernestus, and Noah Dormann. Stable-baselines3: Reliable re-inforcement learning implementations. Journal of machine learning research , 22(268):1–8, 2021. 
+
+Liu and Fan et al.: Preprint submitted to Elsevier Page 12 of 12

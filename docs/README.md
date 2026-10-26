@@ -51,14 +51,14 @@
       <span class="dpr-home-dashboard-kicker">2026-09-27 ~ 2026-10-26</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 14 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 19 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>14</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>19</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-26 12:17:26 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-26 12:24:14 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>本期速读了 14 篇安全强化学习方向论文，其中 3 篇以 9.0 分领跑，重点关注扩散策略与 Hamilton-Jacobi 可达性结合、CMDP 逐步约束的实例相关遗憾界，以及自动驾驶在线安全学习中的价值校准与自适应引导。建议优先看前两篇，它们分别代表“在线安全策略生成”和“约束强化学习理论”两条主线；普通读者可先了解安全强化学习的基本框架，再读论文。</p>
+<p>本期速读19篇，聚焦安全强化学习的扩散策略、CMDP约束后悔界与统一Bellman算子三大高分方向。最值得看的是Safe Score Matching将Hamilton-Jacobi可达性与扩散策略结合，以及统一Bellman算子如何整合安全约束。建议普通读者先浏览这三篇9.0分论文的摘要，再按兴趣深入。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -91,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">14 篇</strong>
+    <strong class="dpr-home-dashboard-count">19 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Safe Score Matching: Diffusion Policies with Hamilton-Jacobi Reachability for Online Safe Reinforcement Learning">Safe Score Matching: Diffusion Policies with Hamilton-Jacobi Reachability for Online Safe Reinforcement Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Instance-Dependent Regret for CMDPs with Step-Wise Constraints">Instance-Dependent Regret for CMDPs with Step-Wise Constraints</span></li><li><span class="dpr-home-dashboard-paper-title" title="Beyond Safe Execution: Safe Online Reinforcement Learning for Autonomous Driving with Value Calibration and Adaptive Guidance">Beyond Safe Execution: Safe Online Reinforcement Learning for Autonomous Driving with Value Calibration and Adaptive Guidance</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Safe Score Matching: Diffusion Policies with Hamilton-Jacobi Reachability for Online Safe Reinforcement Learning">Safe Score Matching: Diffusion Policies with Hamilton-Jacobi Reachability for Online Safe Reinforcement Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Instance-Dependent Regret for CMDPs with Step-Wise Constraints">Instance-Dependent Regret for CMDPs with Step-Wise Constraints</span></li><li><span class="dpr-home-dashboard-paper-title" title="A Unified Bellman Operator for Safety-Critical Reinforcement Learning">A Unified Bellman Operator for Safety-Critical Reinforcement Learning</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">safe-rl <strong>14</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">safe-rl <strong>19</strong></span></div>
 </section>
 </div>
 
