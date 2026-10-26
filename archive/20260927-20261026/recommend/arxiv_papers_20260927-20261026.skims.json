@@ -1,0 +1,536 @@
+{
+  "mode": "skims",
+  "generated_at": "2026-10-26T12:15:31.523823+00:00",
+  "stats": {
+    "mode": "skims",
+    "forced_all_quick": true,
+    "min_score": 8.0,
+    "deep_divecandidates": 14,
+    "deep_cap": null,
+    "deep_selected": 0,
+    "quick_candidates": 14,
+    "quick_skim_target": null,
+    "quick_selected": 14
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2609.33337v1",
+      "source": "arxiv",
+      "title": "Safe Score Matching: Diffusion Policies with Hamilton-Jacobi Reachability for Online Safe Reinforcement Learning",
+      "abstract": "Online safe reinforcement learning (RL) seeks policies that maximize reward while satisfying safety constraints. A popular line of research in safe RL relaxes safety to a soft expected-cost constraint and solves the resulting Constrained Markov Decision Process via primal-dual Lagrangian updates that only enforce safety on average. To address this limitation, hard, state-wise constraints are introduced and often imposed through Hamilton-Jacobi (HJ) reachability. Yet such constraints require solving different objectives in the feasible and infeasible regions: reward maximization in the former, recovery toward the feasible regions in the latter. The resulting target action distributions are inherently multimodal, and this structure poses a fundamental challenge for the Gaussian or deterministic actors used in existing HJ-based safe RL, which often collapse onto suboptimal modes. Diffusion policies provide the expressiveness needed to represent such distributions, and recent work on Q-score matching offers a route to training them for online RL by score regression -- but has been applied only to reward maximization. We propose Safe Score Matching (SSM), an off-policy actor-critic method that adapts Q-score matching to hard-constrained safe RL by gating a two-branch score target with HJ reachability: inside the feasible set, the denoising process degenerates to Q-score matching on actions classified as viable by the HJ critic; outside, a recovery branch biases denoising toward regions with lower worst-case violation. On quadrotor and fixed-wing trajectory-tracking and stabilize-and-avoid benchmarks, SSM attains the best or near-best task performance with low false-safe rates, whereas the primal-dual baseline admits more unsafe behavior and reachability-based baselines tend to be more conservative; on Safety-Gymnasium velocity tasks, SSM attains the lowest cost with competitive reward.",
+      "authors": [
+        "Boyang Li",
+        "Matthew Kim",
+        "Sylvia Lee Herbert"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.RO"
+      ],
+      "published": "2026-09-27T08:09:52+00:00",
+      "link": "https://arxiv.org/pdf/2609.33337v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "hard state-wise safety constraints via Hamilton-Jacobi reachability for online safe RL",
+      "llm_evidence_cn": "用HJ可达性施加逐状态硬安全约束的在线安全强化学习",
+      "llm_evidence": "用HJ可达性施加逐状态硬安全约束的在线安全强化学习",
+      "canonical_evidence": "用HJ可达性施加逐状态硬安全约束的在线安全强化学习",
+      "llm_tldr_en": "Safe Score Matching combines diffusion policies with Hamilton-Jacobi reachability to enforce hard state-wise safety constraints in online safe RL instead of soft expected-cost Lagrangian constraints.",
+      "llm_tldr_cn": "在线安全强化学习通常把安全松弛为期望代价约束并用拉格朗日原对偶求解，只能保证平均意义上的安全。本文引入Hamilton-Jacobi可达性施加逐状态硬约束，并用扩散策略表示可行域奖励最大化与不可行域恢复所构成的多峰目标动作分布，通过安全分数匹配训练该策略。方法在保证硬安全的同时保持策略表达力。其贡献在于以硬约束替代软约束，为在线安全强化学习提供更强安全保障。",
+      "llm_tldr": "在线安全强化学习通常把安全松弛为期望代价约束并用拉格朗日原对偶求解，只能保证平均意义上的安全。本文引入Hamilton-Jacobi可达性施加逐状态硬约束，并用扩散策略表示可行域奖励最大化与不可行域恢复所构成的多峰目标动作分布，通过安全分数匹配训练该策略。方法在保证硬安全的同时保持策略表达力。其贡献在于以硬约束替代软约束，为在线安全强化学习提供更强安全保障。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "safe reinforcement learning methods with safety constraints and guarantees",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.02520v1",
+      "source": "arxiv",
+      "title": "Instance-Dependent Regret for CMDPs with Step-Wise Constraints",
+      "abstract": "We study online learning in episodic tabular constrained Markov decision processes with step-wise safety constraints. In such a setting, the constraints induce a safe subgraph that shapes the variance of cumulative rewards under feasible policies and, consequently, the difficulty of learning. Exploiting this structure, however, requires learning which actions are safe while controlling constraint violations. We propose Safe Variance-Adaptive Exploration (SVAE), an efficient algorithm that learns candidate safe subgraphs and performs variance-adaptive optimistic planning within them. With high probability, SVAE achieves cumulative regret of order $\\widetilde{\\mathcal{O}}(\\sqrt{SAH\\min\\{\\mathbb{V}_Σ,K\\mathrm{Var}^{\\star}\\}}+S\\sqrt{AH^3\\min\\{K,\\mathcal{C}\\}}+S^2AH^2)$ over $K$ episodes, where $H$ is the horizon of a single episode, while $S$ and $A$ are the numbers of states and actions, respectively. Here, $\\mathrm{Var}^{\\star}$ is the maximum return variance among safe policies, $\\mathbb{V}_Σ$ is the variance accumulated before the first unsafe action is encountered, and $\\mathcal{C}$ captures the statistical complexity of eliminating actions incorrectly considered potentially safe. SVAE additionally attains $\\widetilde{\\mathcal{O}}(H\\sqrt{SAK}+S^2AH^2)$ step-wise constraint violation and a gap-dependent violation bound that is polylogarithmic in $K$. Finally, we establish a lower bound showing that dependence on these instance-specific quantities is unavoidable.",
+      "authors": [
+        "Qian Zuo",
+        "Francesco Emanuele Stradi",
+        "Leyang Xue",
+        "Sattar Vakili"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-01T21:49:16+00:00",
+      "link": "https://arxiv.org/pdf/2610.02520v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "safe exploration with guarantees in finite-action tabular CMDPs",
+      "llm_evidence_cn": "有限动作表格CMDP中带保证的安全探索",
+      "llm_evidence": "有限动作表格CMDP中带保证的安全探索",
+      "canonical_evidence": "有限动作表格CMDP中带保证的安全探索",
+      "llm_tldr_en": "SVAE learns candidate safe subgraphs while controlling constraint violations and performs variance-adaptive optimistic planning inside them, yielding instance-dependent regret bounds for tabular CMDPs with step-wise safety constraints.",
+      "llm_tldr_cn": "论文研究带逐步安全约束的情节式表格约束马尔可夫决策过程在线学习，约束所诱导的安全子图决定了学习难度，但识别安全动作必须同时控制违反。作者提出SVAE算法，在学习候选安全子图的同时限制约束违反，并在子图内进行方差自适应乐观规划。理论上给出与实例相关的累积遗憾界，表明算法能在保证安全的前提下高效学习，为有限动作CMDP的安全探索提供了原则性方法。",
+      "llm_tldr": "论文研究带逐步安全约束的情节式表格约束马尔可夫决策过程在线学习，约束所诱导的安全子图决定了学习难度，但识别安全动作必须同时控制违反。作者提出SVAE算法，在学习候选安全子图的同时限制约束违反，并在子图内进行方差自适应乐观规划。理论上给出与实例相关的累积遗憾界，表明算法能在保证安全的前提下高效学习，为有限动作CMDP的安全探索提供了原则性方法。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "Find methods for safe reinforcement learning in finite action constrained Markov decision processes that provide safety guarantees during exploration.",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.17799v1",
+      "source": "arxiv",
+      "title": "Beyond Safe Execution: Safe Online Reinforcement Learning for Autonomous Driving with Value Calibration and Adaptive Guidance",
+      "abstract": "Online reinforcement learning (RL) enables driving policies to adapt to changing deployment conditions, but requires safe exploration throughout training. Safety filtering alone does not ensure stable policy improvement or reduced dependence on corrections. We propose Safe Online Adaptive Refinement (SOAR-Flow), a framework for safe and stable online fine-tuning of offline-initialized Flow-based driving policies. A control barrier function (CBF)--model predictive control (MPC) filter corrects potentially unsafe actions before execution. To support stable policy updates, we introduce Gaussian-return-aware value calibration based on calibrated Q-learning (Cal-QL), using recorded behavior returns and predicted return variability to smooth conservative critic updates and mitigate policy degradation. Paired corrective learning teaches feasible action adjustments, while an intervention-to-go predictor encourages decisions requiring fewer future corrections. Its predictions also regulate guidance strength, allowing recovery supervision to weaken as predicted dependence decreases. Together with gradually reduced calibration regularization, this supports continued task improvement while preserving hard execution constraints. We analyze conditions for safe execution at control steps and diminishing auxiliary learning influences. We evaluate SOAR-Flow in simulation and on an uncrewed ground vehicle (UGV). The results demonstrate improved driving performance and reduced reliance on safety corrections during protected online fine-tuning. The demonstration video and project overview are available at https://lzqw.github.io/SOAR-Flow/.",
+      "authors": [
+        "Zeqiao Li",
+        "Yijing Wang",
+        "Haoyu Wang",
+        "Zheng Li",
+        "Zhiqiang Zuo"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-13T06:28:47+00:00",
+      "link": "https://arxiv.org/pdf/2610.17799v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "safe online RL with CBF-MPC safety filter and stable policy improvement",
+      "llm_evidence_cn": "结合CBF-MPC安全过滤与稳定策略提升的在线安全强化学习",
+      "llm_evidence": "结合CBF-MPC安全过滤与稳定策略提升的在线安全强化学习",
+      "canonical_evidence": "结合CBF-MPC安全过滤与稳定策略提升的在线安全强化学习",
+      "llm_tldr_en": "SOAR-Flow safely fine-tunes offline-initialized flow-based driving policies online using a CBF-MPC safety filter, calibrated Q-value updates and adaptive guidance for safe exploration.",
+      "llm_tldr_cn": "在线强化学习使自动驾驶策略能适应部署变化，但训练全过程需要安全探索，仅靠安全过滤无法保证稳定的策略提升。本文提出SOAR-Flow框架，用控制屏障函数与模型预测控制构成的安全过滤器在执行前修正危险动作，并结合高斯回报感知的值校准与自适应引导实现在线微调。实验显示方法在保持安全的同时实现稳定策略提升并减少对外部纠正的依赖。其贡献在于把安全过滤与策略改进机制结合，实现在线安全学习。",
+      "llm_tldr": "在线强化学习使自动驾驶策略能适应部署变化，但训练全过程需要安全探索，仅靠安全过滤无法保证稳定的策略提升。本文提出SOAR-Flow框架，用控制屏障函数与模型预测控制构成的安全过滤器在执行前修正危险动作，并结合高斯回报感知的值校准与自适应引导实现在线微调。实验显示方法在保持安全的同时实现稳定策略提升并减少对外部纠正的依赖。其贡献在于把安全过滤与策略改进机制结合，实现在线安全学习。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "safe reinforcement learning methods with safety constraints and guarantees",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.23445v1",
+      "source": "arxiv",
+      "title": "RECREG: Recovery-based Shielding for Regular Safety Properties in Reinforcement Learning",
+      "abstract": "In many real-world scenarios we need to consider formal requirements, such as safety and constraint compliance, to deploy Reinforcement Learning (RL) agents. In this paper we introduce RecReg, a safe RL framework capable of enforcing non-Markovian regular safety properties via recovery-based shielding. RecReg is a unified approach that supports different levels of a priori knowledge and safety guarantees. The paper primarily focuses on building the theoretical foundations for RecReg in the tabular setting, providing rigorous safety and convergence guarantees that are not present in related work. We provide an extensive set of empirical results using the MASA-Safe-RL library, and we outline an extension of RecReg to deep RL domains using SOTA model-based RL. Our empirical results demonstrate that RecReg achieves efficient learning and matches the theory in this paper.",
+      "authors": [
+        "Alexander W. Goodall",
+        "Francesco Belardinelli"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-16T13:28:34+00:00",
+      "link": "https://arxiv.org/pdf/2610.23445v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "recovery-based shielding enforcing safety properties with guarantees",
+      "llm_evidence_cn": "基于恢复的屏蔽机制强制安全属性并提供保证",
+      "llm_evidence": "基于恢复的屏蔽机制强制安全属性并提供保证",
+      "canonical_evidence": "基于恢复的屏蔽机制强制安全属性并提供保证",
+      "llm_tldr_en": "RecReg enforces non-Markovian regular safety properties through recovery-based shielding, providing rigorous safety and convergence guarantees in the tabular setting with experiments on MASA-Safe-RL.",
+      "llm_tldr_cn": "部署强化学习智能体需要满足安全与约束合规等形式化要求。作者提出RecReg，一种通过恢复式屏蔽强制执行非马尔可夫正则安全属性的安全强化学习框架，可适配不同水平的先验知识并给出相应安全保证。论文在表格设定下建立了严格的安全性与收敛性理论，并基于MASA-Safe-RL库开展大量实验，同时给出向深度强化学习扩展的路径，为安全屏蔽类方法提供了统一理论基础。",
+      "llm_tldr": "部署强化学习智能体需要满足安全与约束合规等形式化要求。作者提出RecReg，一种通过恢复式屏蔽强制执行非马尔可夫正则安全属性的安全强化学习框架，可适配不同水平的先验知识并给出相应安全保证。论文在表格设定下建立了严格的安全性与收敛性理论，并基于MASA-Safe-RL库开展大量实验，同时给出向深度强化学习扩展的路径，为安全屏蔽类方法提供了统一理论基础。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "action masking for safe exploration in discrete action reinforcement learning",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2609.34041v1",
+      "source": "arxiv",
+      "title": "Vision--Language Signals in Constrained RL: Safety Gains Without Anticipation",
+      "abstract": "Safe reinforcement learning seeks policies that maximise task performance while satisfying safety constraints. In driving benchmarks, however, collision costs typically appear only at the time of collision, providing no advance warning of an approaching hazard. Frozen vision--language models can provide dense semantic feedback, yet it remains unclear whether their scores anticipate collisions and which component drives an observed safety improvement. Episodic cost can also favour policies that make little task progress. To address these gaps, we propose VLM-Safe-RL, a framework that integrates frozen CLIP signals into PPO-Lagrangian through reward shaping and an augmented multiplier update. On MetaDrive Hard, which combines the densest traffic with the largest map, the catastrophe rate falls from 31.6\\% to 19.4\\%. FormulaOne-L2 analysis finds no evidence that the CLIP signals anticipate collisions and shows that the VLM term has a negligible effect on the Lagrange multiplier. These findings show a conditional reduction in observed catastrophe rate without evidence of collision anticipation.",
+      "authors": [
+        "Samuel Tetteh",
+        "Cody Fleming"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-09-28T00:07:53+00:00",
+      "link": "https://arxiv.org/pdf/2609.34041v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "safe RL with PPO-Lagrangian constraint handling and safety gains",
+      "llm_evidence_cn": "基于PPO-拉格朗日的安全强化学习与安全收益分析",
+      "llm_evidence": "基于PPO-拉格朗日的安全强化学习与安全收益分析",
+      "canonical_evidence": "基于PPO-拉格朗日的安全强化学习与安全收益分析",
+      "llm_tldr_en": "VLM-Safe-RL injects frozen CLIP signals into PPO-Lagrangian through reward shaping and an augmented multiplier update, then tests on MetaDrive Hard whether dense vision-language feedback truly anticipates collisions.",
+      "llm_tldr_cn": "安全强化学习需在最大化任务性能的同时满足安全约束，但驾驶基准中碰撞代价只在碰撞瞬间出现，冻结视觉语言模型的分数能否提前预警碰撞并不明确。作者提出VLM-Safe-RL，把冻结CLIP信号通过奖励塑形与增强乘子更新融入PPO-拉格朗日框架，并设计对照以分离各组件贡献。在MetaDrive Hard上的实验显示安全指标确有改善，但改善并非来自碰撞前瞻性，揭示了密集语义反馈的作用机制与局限。",
+      "llm_tldr": "安全强化学习需在最大化任务性能的同时满足安全约束，但驾驶基准中碰撞代价只在碰撞瞬间出现，冻结视觉语言模型的分数能否提前预警碰撞并不明确。作者提出VLM-Safe-RL，把冻结CLIP信号通过奖励塑形与增强乘子更新融入PPO-拉格朗日框架，并设计对照以分离各组件贡献。在MetaDrive Hard上的实验显示安全指标确有改善，但改善并非来自碰撞前瞻性，揭示了密集语义反馈的作用机制与局限。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "safe reinforcement learning methods with safety constraints and guarantees",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.12420v1",
+      "source": "arxiv",
+      "title": "A Unified Bellman Operator for Safety-Critical Reinforcement Learning",
+      "abstract": "Reinforcement learning in safety-critical domains requires maximizing task performance while strictly adhering to safety constraints. Existing safe reinforcement learning paradigms typically force a trade-off: they either require a priori knowledge to provide strict safety guarantees (e.g., safety filters), or they enable joint learning but only satisfy safety constraints on average. In this work, we propose a novel Bellman operator that unifies performance and safety objectives into a joint value function. We show that temporal difference learning with the joint Bellman operator converges under a two-timescale stochastic approximation framework. On the fast timescale, the safety value of the learning joint policy is estimated, while the joint value is estimated on the slow timescale. Convergence is ensured by formulating the limiting dynamics as an occupation-averaged differential inclusion, and showing that it asymptotically converges to a set of limiting optimal safety-constrained task value functions. Theoretically, once converged, the resulting optimal policy maximizes task return while maintaining safety at all times. Empirical evaluations on continuous control tasks with neural approximations demonstrate stable convergence with near-zero safety violations at test time.",
+      "authors": [
+        "Nishanth Arun Rao",
+        "Royina Karegoudra Jayanth",
+        "Benjamin Eysenbach",
+        "Jaime Fernández Fisac"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-08T17:53:02+00:00",
+      "link": "https://arxiv.org/pdf/2610.12420v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Unified Bellman operator jointly optimizes performance and safety with convergence guarantees",
+      "llm_evidence_cn": "统一贝尔曼算子联合优化性能与安全并提供收敛保证",
+      "llm_evidence": "统一贝尔曼算子联合优化性能与安全并提供收敛保证",
+      "canonical_evidence": "统一贝尔曼算子联合优化性能与安全并提供收敛保证",
+      "llm_tldr_en": "The paper introduces a unified Bellman operator that jointly represents task performance and safety values, with two-timescale TD convergence guarantees for safety-critical RL.",
+      "llm_tldr_cn": "针对现有安全强化学习要么依赖先验安全过滤器、要么仅满足平均约束的权衡，本文提出统一贝尔曼算子。该方法将性能与安全目标融合为联合价值函数，并在双时间尺度随机逼近框架下证明时序差分学习收敛。结果为安全关键场景提供兼具严格约束建模与收敛保证的联合学习途径。",
+      "llm_tldr": "针对现有安全强化学习要么依赖先验安全过滤器、要么仅满足平均约束的权衡，本文提出统一贝尔曼算子。该方法将性能与安全目标融合为联合价值函数，并在双时间尺度随机逼近框架下证明时序差分学习收敛。结果为安全关键场景提供兼具严格约束建模与收敛保证的联合学习途径。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "safe reinforcement learning methods with safety constraints and guarantees",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.12432v1",
+      "source": "arxiv",
+      "title": "FAITH: Feasibility-Aware Safety-Filtered RL for High-Dimensional Systems",
+      "abstract": "Safe reinforcement learning commonly places safety and task performance in the same policy objective, where they can introduce competing updates. Safety filters separate them at action execution, but classical designs require an analytic safety function and dynamics model, and standard minimal-intervention filters are myopic to long-horizon task return because they minimize only instantaneous action deviation. Hard projections are also undefined when no safe action exists. We present FAITH, a feasibility-aware, model-free framework that approximates the optimal state-action safety value and amortizes minimal-intervention filtering with a feedforward network. The task policy optimizes the task return through the filtered dynamics, which recovers the feasible constrained problem without a competing safety term in the task-policy update. When no action satisfies the learned safety condition, the same filter approaches the action with minimum predicted peak harm. On a double integrator example and a Safety Gym environment, FAITH achieves the highest return among methods with no feasible-start violations and matches the lowest harm from infeasible starts. On a 29-DoF humanoid, it reaches a 99.95% safety rate while retaining 97% of the unfiltered return in Walking-Avoid, and obtains the highest measured safety rate in Push-Avoid by learning to sacrifice balancing and fall away from the protected region. The same policies are also demonstrated on a real-world Unitree G1 humanoid.",
+      "authors": [
+        "Songyuan Zhang",
+        "Baljeet Singh",
+        "Sarthak Ranjeet Kaingade",
+        "Chuchu Fan",
+        "Bryan Trinh"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG",
+        "eess.SY"
+      ],
+      "published": "2026-10-08T17:57:06+00:00",
+      "link": "https://arxiv.org/pdf/2610.12432v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Feasibility-aware model-free safety-filtered RL for high-dimensional systems",
+      "llm_evidence_cn": "面向高维系统的可行性感知无模型安全过滤强化学习",
+      "llm_evidence": "面向高维系统的可行性感知无模型安全过滤强化学习",
+      "canonical_evidence": "面向高维系统的可行性感知无模型安全过滤强化学习",
+      "llm_tldr_en": "FAITH separates safety from task policy via a learned feasibility-aware safety filter, amortizing minimal-intervention filtering and handling cases without safe actions.",
+      "llm_tldr_cn": "针对安全强化学习中安全与性能目标相互竞争、经典安全过滤器依赖解析模型且无安全动作时硬投影失效的问题，本文提出FAITH。该框架无模型地近似最优状态动作安全价值，并用前馈网络摊销最小干预过滤，同时显式处理可行性。方法在高维系统中提升安全过滤的适用性，为安全约束下的策略优化提供可扩展工具。",
+      "llm_tldr": "针对安全强化学习中安全与性能目标相互竞争、经典安全过滤器依赖解析模型且无安全动作时硬投影失效的问题，本文提出FAITH。该框架无模型地近似最优状态动作安全价值，并用前馈网络摊销最小干预过滤，同时显式处理可行性。方法在高维系统中提升安全过滤的适用性，为安全约束下的策略优化提供可扩展工具。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "safe reinforcement learning methods with safety constraints and guarantees",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.13737v1",
+      "source": "arxiv",
+      "title": "SafeDiSTL: Decomposing Joint Constraints for Safe Multi-Agent Reinforcement Learning",
+      "abstract": "Cooperative multi-agent tasks often impose constraints on a shared objective or collective safety. A team level violation cost function can measure this constraint outcome, but does not distinguish which agents' actions most strongly influence that violation. We present SafeDiSTL, a constrained multi-agent reinforcement learning framework that allows for credit assignment even with joint constraint measurements. We use Signal Temporal Logic (STL) robustness to measure episode-level violation through running-maximum cost increments. Smooth full-episode robustness and differentiable dynamics provide action sensitivities, which allocate each cost increment across agents at the same decision time. These sensitivities account for delayed effects when weighting agents' shares of each cost increment. We study the framework in cooperative payload transport, connected navigation, and networked traffic control tasks. SafeDiSTL achieves 1.6-5.1x the safe-success rate in transport, improves navigation safe-success by 11.1%, and delivers 50-68% more throughput in traffic when compared to constrained baselines. Results demonstrate a strong improvement of the learned policy in dealing with shared constraint while retaining the performance of unconstrained policies.",
+      "authors": [
+        "Hongrui Zheng",
+        "Aditya Singh",
+        "Rahul Mangharam"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-09T15:32:06+00:00",
+      "link": "https://arxiv.org/pdf/2610.13737v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "constrained multi-agent RL with joint safety constraints and credit assignment",
+      "llm_evidence_cn": "带联合安全约束与信用分配的安全多智能体强化学习",
+      "llm_evidence": "带联合安全约束与信用分配的安全多智能体强化学习",
+      "canonical_evidence": "带联合安全约束与信用分配的安全多智能体强化学习",
+      "llm_tldr_en": "SafeDiSTL uses Signal Temporal Logic robustness and action sensitivities to decompose team-level constraint violations across agents in constrained multi-agent RL.",
+      "llm_tldr_cn": "协作多智能体任务常对集体安全施加约束，但团队级违规代价无法区分各智能体动作的影响。本文提出SafeDiSTL约束多智能体强化学习框架，利用信号时序逻辑鲁棒性度量回合级违规，并通过平滑全程鲁棒性与可微动力学计算动作敏感度，将每个代价增量在同一决策时刻分配给各智能体，同时考虑延迟效应。方法使联合约束下的信用分配成为可能，从而更有效地优化安全约束。",
+      "llm_tldr": "协作多智能体任务常对集体安全施加约束，但团队级违规代价无法区分各智能体动作的影响。本文提出SafeDiSTL约束多智能体强化学习框架，利用信号时序逻辑鲁棒性度量回合级违规，并通过平滑全程鲁棒性与可微动力学计算动作敏感度，将每个代价增量在同一决策时刻分配给各智能体，同时考虑延迟效应。方法使联合约束下的信用分配成为可能，从而更有效地优化安全约束。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "safe reinforcement learning methods with safety constraints and guarantees",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.20255v1",
+      "source": "arxiv",
+      "title": "Safe Reinforcement Learning with Receding-Horizon Safety Critic and Differentiable Action Shields",
+      "abstract": "Despite the Markov assumption, safety failures in robot reinforcement learning rarely occur instantaneously; they typically emerge over several steps as the policy enters unfamiliar states under disturbances and domain shift. We address this limitation by learning a receding-horizon safety critic that predicts whether a state will remain non-terminating over the next receding horizon, enabling anticipatory detection of impending locomotion failures. The critic is trained from rollout-derived horizon labels with a composite objective that combines horizon classification, control-barrier-function-inspired temporal consistency, and smoothness regularization, and we aggregate an ensemble of critics with a conservative Conditional Value at Risk estimate to account for uncertainty. Building on the learned critic, we derive a closed-form, differentiable CBF-style safety filter that minimally modifies the policy action to improve predicted safety, and integrate it into PPO with an anticipation loss to reduce policy-filter mismatch during training. In simulated quadruped locomotion, our method improves robustness under action noise, external perturbations, and terrain shifts, reducing catastrophic failures while maintaining competitive returns.",
+      "authors": [
+        "Siwei Ju",
+        "Jan Peters",
+        "Oleg Arenz"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-14T14:25:46+00:00",
+      "link": "https://arxiv.org/pdf/2610.20255v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Safe RL with receding-horizon safety critic and differentiable action shields",
+      "llm_evidence_cn": "结合滚动时域安全评论家与可微动作屏蔽的安全强化学习",
+      "llm_evidence": "结合滚动时域安全评论家与可微动作屏蔽的安全强化学习",
+      "canonical_evidence": "结合滚动时域安全评论家与可微动作屏蔽的安全强化学习",
+      "llm_tldr_en": "This paper learns a receding-horizon safety critic and differentiable action shields to anticipate multi-step robot safety failures and intervene before unsafe actions occur.",
+      "llm_tldr_cn": "针对机器人强化学习中安全失败往往多步累积而非瞬时发生的问题，本文提出滚动时域安全评论家与可微动作屏蔽。评论家由滚动时域标签训练，并融合控制屏障函数式时序一致性与平滑正则，集成保守条件风险估计。方法可提前检测即将发生的运动失败并通过动作屏蔽干预，提升安全关键机器人策略的部署可靠性。",
+      "llm_tldr": "针对机器人强化学习中安全失败往往多步累积而非瞬时发生的问题，本文提出滚动时域安全评论家与可微动作屏蔽。评论家由滚动时域标签训练，并融合控制屏障函数式时序一致性与平滑正则，集成保守条件风险估计。方法可提前检测即将发生的运动失败并通过动作屏蔽干预，提升安全关键机器人策略的部署可靠性。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "Find continuous action safety techniques such as constrained policy optimization, safety layers, and control barrier functions that can be adapted to discrete actions.",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.21548v1",
+      "source": "arxiv",
+      "title": "Finite-Time Guarantees for Constrained Reinforcement Learning under Partial Observability",
+      "abstract": "We study reinforcement learning in constrained partially observable Markov decision processes (CPOMDPs), where an agent maximizes reward subject to a cost constraint using only incomplete information about the underlying state. The lack of state observability may require optimal policies to depend on arbitrarily long observation-action histories, making planning and learning challenging. We leverage recent advances in finite-memory approximations of POMDPs and represent finite history windows as states of a constrained MDP. We then develop a primal--dual algorithm that provides the first non-asymptotic guarantees that jointly bound average reward suboptimality and constraint violation in the original CPOMDP. A key challenge is that this finite-window approximation affects both reward values and the set of feasible policies. Under a filter-stability assumption, we derive bounds relating optimality and feasibility in the finite-state model to those in the original CPOMDP, with approximation errors that decay geometrically with the window length. Experiments in partially observable gridworlds demonstrate the effectiveness of our approach.",
+      "authors": [
+        "Valentina Zaccaria",
+        "Philip Jordan",
+        "Tingting Ni",
+        "Gian Antonio Susto",
+        "Maryam Kamgarpour"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-15T09:12:27+00:00",
+      "link": "https://arxiv.org/pdf/2610.21548v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Constrained RL with finite-time bounds on constraint violation",
+      "llm_evidence_cn": "带约束违反有限时间界的约束强化学习",
+      "llm_evidence": "带约束违反有限时间界的约束强化学习",
+      "canonical_evidence": "带约束违反有限时间界的约束强化学习",
+      "llm_tldr_en": "Studies constrained POMDPs and gives the first non-asymptotic primal-dual guarantees jointly bounding reward suboptimality and constraint violation via finite-memory constrained MDP approximations.",
+      "llm_tldr_cn": "针对部分可观测下约束强化学习难以规划与学习的问题，论文研究约束部分可观测马尔可夫决策过程，利用有限记忆近似将有限历史窗口表示为约束MDP的状态。作者提出原始-对偶算法，首次给出同时约束平均奖励次优性与约束违反的非渐近保证。该结果为带安全约束的强化学习提供了理论支撑，并说明不可观测性对安全保证的影响。",
+      "llm_tldr": "针对部分可观测下约束强化学习难以规划与学习的问题，论文研究约束部分可观测马尔可夫决策过程，利用有限记忆近似将有限历史窗口表示为约束MDP的状态。作者提出原始-对偶算法，首次给出同时约束平均奖励次优性与约束违反的非渐近保证。该结果为带安全约束的强化学习提供了理论支撑，并说明不可观测性对安全保证的影响。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "safe reinforcement learning methods with safety constraints and guarantees",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.26256v1",
+      "source": "arxiv",
+      "title": "LOCU: Lowdin-Orthogonalized Constraint Updates for Multi-Constraint Policy Optimization",
+      "abstract": "We investigate multi-constraint policy optimization in constrained Markov decision processes (CMDPs), where interactions among constraint gradients often yield ill-conditioned update directions, causing numerically fragile steps and unintended cancellation or redundant overlap in constraint corrections. To address this, we propose LOCU, which mitigates numerical instability arising from constraint interactions by applying symmetric Lowdin orthogonalization to the natural gradients of the reward and constraints under the Fisher-Rao metric. Combined with Fisher-geometric screening and near-collinear compression, LOCU yields a compact reduced space in which the trust region becomes a Euclidean ball and constraints are handled symmetrically through a low-dimensional active-set solve. For infeasible iterates, LOCU constructs a Pareto-descent direction which preserves the local feasibility of satisfied constraints within the same reduced formulation. Experiments show that LOCU remains stable under high constraint coupling, narrow feasible regions, and infeasible starts, and generalizes across different cost critic architectures.",
+      "authors": [
+        "Joonyoung Lim",
+        "Younghwan Yoo"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-19T12:13:45+00:00",
+      "link": "https://arxiv.org/pdf/2610.26256v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multi-constraint policy optimization in CMDPs with trust-region constraint handling",
+      "llm_evidence_cn": "CMDP多约束策略优化与信赖域约束处理",
+      "llm_evidence": "CMDP多约束策略优化与信赖域约束处理",
+      "canonical_evidence": "CMDP多约束策略优化与信赖域约束处理",
+      "llm_tldr_en": "Multi-constraint CMDPs suffer ill-conditioned updates from interacting constraint gradients; LOCU applies symmetric Lowdin orthogonalization to natural gradients under the Fisher-Rao metric, yielding stable and symmetric constraint updates.",
+      "llm_tldr_cn": "多约束约束马尔可夫决策过程中约束梯度相互作用常使更新方向病态，导致数值脆弱以及约束修正相互抵消或冗余重叠。作者提出LOCU，在Fisher-Rao度量下对奖励与约束的自然梯度做对称勒夫丁正交化，并辅以几何筛选与近共线压缩，使信赖域化为欧氏球且约束被对称处理。该方法显著缓解约束交互带来的数值不稳定，为多约束安全策略优化提供更稳健的更新方向。",
+      "llm_tldr": "多约束约束马尔可夫决策过程中约束梯度相互作用常使更新方向病态，导致数值脆弱以及约束修正相互抵消或冗余重叠。作者提出LOCU，在Fisher-Rao度量下对奖励与约束的自然梯度做对称勒夫丁正交化，并辅以几何筛选与近共线压缩，使信赖域化为欧氏球且约束被对称处理。该方法显著缓解约束交互带来的数值不稳定，为多约束安全策略优化提供更稳健的更新方向。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "constrained policy optimization adapted to discrete action safe reinforcement learning",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.29149v1",
+      "source": "arxiv",
+      "title": "SAFTER: Safety-Aware Filtering Through Explicit Recoverability for Robust Reinforcement Learning under Distribution Shift",
+      "abstract": "Learning safe policies that generalize to unseen environments is difficult under bounded actuation, where an unsafe decision may become unrecoverable. Conventional control barrier function (CBF) filters enforce only instantaneous safety and ignore future recoverability. We propose SAFTER (Safety-Aware Filtering Through Explicit Recoverability), which embeds a differentiable, closed-form backup-CBF filter into Soft Actor-Critic training. SAFTER unifies current safety, finite-horizon backup safety, terminal recoverability, and input admissibility into a single differentiable certificate. Its CBF condition yields an exact minimum-intervention projection without iterative online optimization. In quadruped navigation, SAFTER reaches 90% training success with 30.6% fewer transitions than Vanilla SAC and 34.1-35.1% fewer than current-state CBF-filtered SAC baselines. Across unseen simulated environments, SAFTER improves success by up to 42.4 and 61.4 percentage points over the state-of-the-art methods CBF-RL and SEA-Nav, respectively, and achieves 73.3% and 76.7% success on two real-world navigation maps. Ablations identify accurate differentiation through the safety filter as a key contributor to robustness, in which replacing the projection Jacobian with the identity approximation reduces success rate in a High-Shift environment from 61.4% to 6.2%. These results show that recoverability-aware filtering serves as both a runtime safety mechanism and a learning mechanism for sample-efficient, robust policies.",
+      "authors": [
+        "Benedictus C. G. Cinun",
+        "Bin Hu"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY",
+        "cs.LG"
+      ],
+      "published": "2026-10-21T03:33:35+00:00",
+      "link": "https://arxiv.org/pdf/2610.29149v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "control barrier function filter embedded in safe RL training",
+      "llm_evidence_cn": "嵌入安全强化学习训练的控制屏障函数滤波器",
+      "llm_evidence": "嵌入安全强化学习训练的控制屏障函数滤波器",
+      "canonical_evidence": "嵌入安全强化学习训练的控制屏障函数滤波器",
+      "llm_tldr_en": "SAFTER embeds a differentiable closed-form backup-CBF filter into Soft Actor-Critic, unifying instantaneous safety, finite-horizon backup safety, terminal recoverability and input admissibility in one certificate.",
+      "llm_tldr_cn": "在驱动受限场景中，一次不安全决策可能不可恢复，而传统控制屏障函数滤波器只保证瞬时安全、忽略未来可恢复性。作者提出SAFTER，将可微的闭式备份CBF滤波器嵌入Soft Actor-Critic训练，把当前安全、有限时域备份安全、终端可恢复性与输入可行性统一为单一可微证书。其CBF条件给出精确的最小干预投影，无需在线迭代优化，在四足机器人等分布偏移任务上验证了鲁棒安全性。",
+      "llm_tldr": "在驱动受限场景中，一次不安全决策可能不可恢复，而传统控制屏障函数滤波器只保证瞬时安全、忽略未来可恢复性。作者提出SAFTER，将可微的闭式备份CBF滤波器嵌入Soft Actor-Critic训练，把当前安全、有限时域备份安全、终端可恢复性与输入可行性统一为单一可微证书。其CBF条件给出精确的最小干预投影，无需在线迭代优化，在四足机器人等分布偏移任务上验证了鲁棒安全性。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "Find continuous action safety techniques such as constrained policy optimization, safety layers, and control barrier functions that can be adapted to discrete actions.",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.30756v1",
+      "source": "arxiv",
+      "title": "Primal-Dual Representation Learning for Low-Rank Constrained MDPs",
+      "abstract": "Representation learning has substantially improved the efficiency of unconstrained continuous-state Markov Decision Processes (MDPs), but its extension to Constrained MDPs (CMDPs) is difficult because the transition representation must be learned while constraint violation is controlled. In this paper, we study representation learning for low-rank CMDPs with continuous state spaces, and propose REP-PD-TEG for the soft cumulative-violation setting. In the feature learning period, the algorithm interacts with the environment using a decaying-$ε$-greedy mixture execution policy, and uses the collected samples to learn transition features by maximum likelihood. Based on the learned features, it constructs uncertainty bonuses and plans with an optimistic Lagrangian objective to obtain the return policy. We prove regret and soft-violation guarantees for the return policies, and quantify the influence of the decaying-$ε$-greedy exploration. In particular, REP-PD-TEG achieves the optimal $\\widetilde O(\\sqrt K)$ return policy bound, and gives a $\\widetilde O(K^{3/4})$ overall sample bound when exploratory actions are charged. For the stricter hard cumulative violation, where feasibility must be verified episode by episode, we propose REP-PD-H-TEG. It plans under a bonus-corrected lower-confidence utility certificate with the learned representation, and performs a stabilized dual search to obtain the return policy, yielding regret and hard-violation bounds. Together, these results give the first theoretically guaranteed representation-learning method for low-rank continuous-state CMDPs with both soft cumulative guarantees and certified hard-violation control.",
+      "authors": [
+        "Chenhao Zhou",
+        "Chao Zhang",
+        "Wensong Bai",
+        "Hanbin Zhao",
+        "Hui Qian"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-22T05:23:42+00:00",
+      "link": "https://arxiv.org/pdf/2610.30756v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "constrained MDPs with controlled constraint violation and primal-dual planning",
+      "llm_evidence_cn": "约束MDP中控制约束违反的原始-对偶表示学习",
+      "llm_evidence": "约束MDP中控制约束违反的原始-对偶表示学习",
+      "canonical_evidence": "约束MDP中控制约束违反的原始-对偶表示学习",
+      "llm_tldr_en": "REP-PD-TEG learns transition features by maximum likelihood under a decaying epsilon-greedy mixture policy, then plans optimistically with Lagrangian bonuses for low-rank CMDPs under soft cumulative-violation constraints.",
+      "llm_tldr_cn": "表示学习在无约束连续状态MDP中成效显著，但扩展到约束MDP时必须同时学习转移表示并控制约束违反，因而十分困难。作者针对低秩CMDP提出REP-PD-TEG：先用衰减ε-贪心混合策略采集样本并以最大似然学习转移特征，再基于特征构造不确定性奖励与乐观拉格朗日规划。在软累积违反设定下，算法兼顾样本效率与约束控制，为约束MDP的表示学习提供了可分析的新范式。",
+      "llm_tldr": "表示学习在无约束连续状态MDP中成效显著，但扩展到约束MDP时必须同时学习转移表示并控制约束违反，因而十分困难。作者针对低秩CMDP提出REP-PD-TEG：先用衰减ε-贪心混合策略采集样本并以最大似然学习转移特征，再基于特征构造不确定性奖励与乐观拉格朗日规划。在软累积违反设定下，算法兼顾样本效率与约束控制，为约束MDP的表示学习提供了可分析的新范式。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "finite-action constrained Markov decision processes with safety constraints",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.31829v1",
+      "source": "arxiv",
+      "title": "SEVI: Safe Evidential Real-World Reinforcement Learning",
+      "abstract": "Real-world reinforcement learning has enabled contact-rich manipulation tasks to be trained directly on physical robots, but unsafe interactions during online learning remain a key barrier to practical deployment. We propose Safe Evidential Real-World Reinforcement Learning (SEVI), a framework for reliability-aware safety intervention during real-world policy learning. SEVI introduces an Evidential Safety Critic that estimates both future constraint-violation risk and epistemic uncertainty in a single forward pass. During online learning, SEVI evaluates each task-policy action before execution; if the action is predicted to be unsafe or the prediction is insufficiently supported by evidence, SEVI overrides it with an offline-trained recovery policy that guides the robot toward a lower-risk region. We evaluate SEVI on two simulated manipulation tasks and a real-world USB insertion task under in-distribution and distribution-shifted conditions. Across task-learning and safety-critic baselines, SEVI achieves the strongest trajectory-level safety prediction, the highest final task success, and the lowest unsafe-event counts. SEVI also reduces unsafe events by 13.4 to 57.1 percent relative to recovery-based safe RL while preserving low-latency execution-time filtering. The project page is available at: https://sevi-safe.github.io/",
+      "authors": [
+        "Shaekh Mohammad Shithil",
+        "Lantao Liu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-22T19:08:36+00:00",
+      "link": "https://arxiv.org/pdf/2610.31829v1",
+      "tags": [
+        "keyword:safe-rl",
+        "query:safe-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Safe real-world RL with evidential safety critic and action override during online learning",
+      "llm_evidence_cn": "在线学习中结合证据式安全评论家与动作覆盖的真实世界安全强化学习",
+      "llm_evidence": "在线学习中结合证据式安全评论家与动作覆盖的真实世界安全强化学习",
+      "canonical_evidence": "在线学习中结合证据式安全评论家与动作覆盖的真实世界安全强化学习",
+      "llm_tldr_en": "SEVI introduces an evidential safety critic that predicts constraint-violation risk and epistemic uncertainty, overriding unsafe actions with a recovery policy during real-world RL.",
+      "llm_tldr_cn": "针对真实世界强化学习在线交互中不安全行为阻碍部署的问题，本文提出SEVI框架。它引入证据式安全评论家，在一次前向传播中同时估计未来约束违反风险与认知不确定性；当动作被预测为不安全或证据不足时，用离线训练恢复策略覆盖。方法提升在线策略学习的安全性，为真实机器人安全部署提供可靠性感知干预机制。",
+      "llm_tldr": "针对真实世界强化学习在线交互中不安全行为阻碍部署的问题，本文提出SEVI框架。它引入证据式安全评论家，在一次前向传播中同时估计未来约束违反风险与认知不确定性；当动作被预测为不安全或证据不足时，用离线训练恢复策略覆盖。方法提升在线策略学习的安全性，为真实机器人安全部署提供可靠性感知干预机制。",
+      "llm_tags": [
+        "query:safe-rl"
+      ],
+      "matched_query_tag": "query:safe-rl",
+      "matched_query_text": "Find methods for safe reinforcement learning in finite action constrained Markov decision processes that provide safety guarantees during exploration.",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    }
+  ]
+}

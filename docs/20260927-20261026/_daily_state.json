@@ -1,0 +1,233 @@
+{
+  "date": "20260927-20261026",
+  "date_label": "2026-09-27 ~ 2026-10-26",
+  "generated_at": "2026-10-26 12:17:26 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2609.33337v1",
+      "route": "20260927-20261026/2609.33337v1-safe-score-matching-diffusion-policies-with-hamilton-jacobi-reachability-for-online-safe-reinforcement-learning",
+      "title": "Safe Score Matching: Diffusion Policies with Hamilton-Jacobi Reachability for Online Safe Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "用HJ可达性施加逐状态硬安全约束的在线安全强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.02520v1",
+      "route": "20260927-20261026/2610.02520v1-instance-dependent-regret-for-cmdps-with-step-wise-constraints",
+      "title": "Instance-Dependent Regret for CMDPs with Step-Wise Constraints",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "有限动作表格CMDP中带保证的安全探索",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.17799v1",
+      "route": "20260927-20261026/2610.17799v1-beyond-safe-execution-safe-online-reinforcement-learning-for-autonomous-driving-with-value-calibration-and-adaptive-guidance",
+      "title": "Beyond Safe Execution: Safe Online Reinforcement Learning for Autonomous Driving with Value Calibration and Adaptive Guidance",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "结合CBF-MPC安全过滤与稳定策略提升的在线安全强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.23445v1",
+      "route": "20260927-20261026/2610.23445v1-recreg-recovery-based-shielding-for-regular-safety-properties-in-reinforcement-learning",
+      "title": "RECREG: Recovery-based Shielding for Regular Safety Properties in Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于恢复的屏蔽机制强制安全属性并提供保证",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2609.34041v1",
+      "route": "20260927-20261026/2609.34041v1-vision--language-signals-in-constrained-rl-safety-gains-without-anticipation",
+      "title": "Vision--Language Signals in Constrained RL: Safety Gains Without Anticipation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于PPO-拉格朗日的安全强化学习与安全收益分析",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.12420v1",
+      "route": "20260927-20261026/2610.12420v1-a-unified-bellman-operator-for-safety-critical-reinforcement-learning",
+      "title": "A Unified Bellman Operator for Safety-Critical Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "统一贝尔曼算子联合优化性能与安全并提供收敛保证",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.12432v1",
+      "route": "20260927-20261026/2610.12432v1-faith-feasibility-aware-safety-filtered-rl-for-high-dimensional-systems",
+      "title": "FAITH: Feasibility-Aware Safety-Filtered RL for High-Dimensional Systems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向高维系统的可行性感知无模型安全过滤强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.13737v1",
+      "route": "20260927-20261026/2610.13737v1-safedistl-decomposing-joint-constraints-for-safe-multi-agent-reinforcement-learning",
+      "title": "SafeDiSTL: Decomposing Joint Constraints for Safe Multi-Agent Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "带联合安全约束与信用分配的安全多智能体强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.20255v1",
+      "route": "20260927-20261026/2610.20255v1-safe-reinforcement-learning-with-receding-horizon-safety-critic-and-differentiable-action-shields",
+      "title": "Safe Reinforcement Learning with Receding-Horizon Safety Critic and Differentiable Action Shields",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "结合滚动时域安全评论家与可微动作屏蔽的安全强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.21548v1",
+      "route": "20260927-20261026/2610.21548v1-finite-time-guarantees-for-constrained-reinforcement-learning-under-partial-observability",
+      "title": "Finite-Time Guarantees for Constrained Reinforcement Learning under Partial Observability",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "带约束违反有限时间界的约束强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.26256v1",
+      "route": "20260927-20261026/2610.26256v1-locu-lowdin-orthogonalized-constraint-updates-for-multi-constraint-policy-optimization",
+      "title": "LOCU: Lowdin-Orthogonalized Constraint Updates for Multi-Constraint Policy Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "CMDP多约束策略优化与信赖域约束处理",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.29149v1",
+      "route": "20260927-20261026/2610.29149v1-safter-safety-aware-filtering-through-explicit-recoverability-for-robust-reinforcement-learning-under-distribution-shift",
+      "title": "SAFTER: Safety-Aware Filtering Through Explicit Recoverability for Robust Reinforcement Learning under Distribution Shift",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "嵌入安全强化学习训练的控制屏障函数滤波器",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.30756v1",
+      "route": "20260927-20261026/2610.30756v1-primal-dual-representation-learning-for-low-rank-constrained-mdps",
+      "title": "Primal-Dual Representation Learning for Low-Rank Constrained MDPs",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "约束MDP中控制约束违反的原始-对偶表示学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    },
+    {
+      "paper_id": "2610.31829v1",
+      "route": "20260927-20261026/2610.31829v1-sevi-safe-evidential-real-world-reinforcement-learning",
+      "title": "SEVI: Safe Evidential Real-World Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "safe-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "在线学习中结合证据式安全评论家与动作覆盖的真实世界安全强化学习",
+      "first_seen_at": "2026-10-26 12:17:26 UTC",
+      "updated_at": "2026-10-26 12:17:26 UTC"
+    }
+  ]
+}
